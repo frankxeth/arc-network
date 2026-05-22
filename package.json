@@ -1,0 +1,29 @@
+{
+  "name": "arc-network",
+  "version": "1.0.0",
+  "description": "A collection of tutorials for building on Arc Testnet, a stablecoin-native Layer-1 blockchain built by Circle.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frankxeth/arc-network.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/frankxeth/arc-network/issues"
+  },
+  "homepage": "https://github.com/frankxeth/arc-network#readme",
+  "dependencies": {
+    "viem": "^2.50.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
