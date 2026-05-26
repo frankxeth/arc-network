@@ -13,6 +13,8 @@ const walletSet = await client.createWalletSet({
 console.log("✅ Wallet Set dibuat!");
 console.log("Wallet Set ID:", walletSet.data?.walletSet?.id);
 
+
+
 // Step 2: Buat Wallet
 const wallet = await client.createWallets({
   blockchains: ["MATIC-AMOY"],
