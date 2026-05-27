@@ -1,6 +1,8 @@
 node_modules/
+dist/
 .env
-*.dat
-out/
-cache/
-artifacts/
+*.env.local
+hello-arc/artifacts/
+hello-arc/cache/
+.DS_Store
+*.log
