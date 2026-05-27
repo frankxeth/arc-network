@@ -6,3 +6,5 @@ hello-arc/artifacts/
 hello-arc/cache/
 .DS_Store
 *.log
+recovery_file*.dat
+package-lock.json
