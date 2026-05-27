@@ -1,18 +1,17 @@
 {
   "name": "arc-network",
-  "version": "1.0.0",
-  "description": "Tutorials for building on Arc Testnet by Circle",
+  "version": "2.0.0",
+  "description": "Developer tutorials for Arc Testnet — following docs.arc.io",
   "type": "module",
   "scripts": {
-    "start": "tsx --env-file=.env index.ts",
+    "start":         "tsx --env-file=.env index.ts",
     "entity-secret": "tsx --env-file=.env circle-entity-secret/index.ts",
-    "hello-arc": "tsx --env-file=.env hello-arc/index.ts",
-    "erc8004": "tsx --env-file=.env erc8004-quickstart/index.ts",
-    "monitor": "tsx --env-file=.env monitor-events/index.ts",
-    "deploy": "tsx --env-file=.env deploy-contracts/index.ts",
-    "bridge": "tsx --env-file=.env app-kit-bridge/index.ts"
+    "erc8004":       "tsx --env-file=.env erc8004-quickstart/index.ts",
+    "monitor":       "tsx --env-file=.env monitor-events/index.ts",
+    "bridge":        "tsx --env-file=.env app-kit-bridge/index.ts"
   },
   "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^10.3.1",
     "viem": "2.21.0"
   },
   "devDependencies": {
