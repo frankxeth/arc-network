@@ -1084,16 +1084,155 @@ function handleConnectBtn() {
     openModal();
   }
 }
-function disconnectWallet() {
-  document.getElementById("walletDropdown").style.display = "none";
-  onDisconnect();
-  localStorage.removeItem("connectedWallet");
-}
 document.addEventListener("click", function(e) {
   const btn = document.getElementById("connectBtn");
   const d = document.getElementById("walletDropdown");
   if (d && btn && !btn.contains(e.target) && !d.contains(e.target)) d.style.display = "none";
 });
 </script>
+
+<!-- ══ Wallet Modal (Unlloo-style) ══ -->
+<style>
+.wm-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.wm-bg.open{display:flex!important}
+.wm-wrap{display:flex;width:90%;max-width:660px;max-height:90vh;background:#131929;border:1px solid #253350;border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.wm-left{width:250px;flex-shrink:0;border-right:1px solid #1e2d45;display:flex;flex-direction:column;overflow-y:auto}
+.wm-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 12px;border-bottom:1px solid #1e2d45;position:sticky;top:0;background:#131929;z-index:1}
+.wm-hdr span{font-size:15px;font-weight:700;color:#e8edf5;font-family:'Inter',sans-serif}
+.wm-hdr button{background:none;border:none;color:#5a7090;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.wm-hdr button:hover{color:#e8edf5}
+.wm-lbl{font-size:10px;font-weight:600;color:#5a7090;text-transform:uppercase;letter-spacing:.08em;padding:12px 16px 6px}
+.wm-row{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;background:none;border:none;width:100%;text-align:left;transition:background .12s}
+.wm-row:hover{background:rgba(255,255,255,.04)}
+.wm-row.dim{opacity:.38}
+.wm-icon{width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;background:#1a2235;border:1px solid #1e2d45;display:flex;align-items:center;justify-content:center;font-size:18px}
+.wm-icon img{width:36px;height:36px;object-fit:contain;border-radius:8px}
+.wm-wname{font-size:13px;font-weight:500;color:#e8edf5;font-family:'Inter',sans-serif}
+.wm-badge{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:100px;margin-top:2px;text-transform:uppercase}
+.b-ok{background:rgba(0,230,118,.12);color:#00e676}
+.b-new{background:rgba(0,212,255,.12);color:#00d4ff}
+.b-get{background:rgba(255,193,7,.1);color:#ffc107}
+.wm-right{flex:1;padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.wm-ri{font-size:38px;margin-bottom:12px}
+.wm-rt{font-size:16px;font-weight:700;color:#e8edf5;margin-bottom:18px;font-family:'Inter',sans-serif}
+.wm-card{display:flex;align-items:flex-start;gap:10px;text-align:left;background:#1a2235;border:1px solid #1e2d45;border-radius:12px;padding:12px;margin-bottom:10px;width:100%}
+.wm-ci{font-size:20px;flex-shrink:0;padding-top:2px}
+.wm-cn{font-size:13px;font-weight:600;color:#e8edf5;margin-bottom:3px;font-family:'Inter',sans-serif}
+.wm-cd{font-size:11px;color:#8aa0be;line-height:1.5;font-family:'Inter',sans-serif}
+.wm-getbtn{display:inline-block;margin-top:14px;background:#00d4ff;color:#000;font-size:13px;font-weight:700;padding:9px 22px;border-radius:8px;text-decoration:none;transition:opacity .15s;font-family:'Inter',sans-serif}
+.wm-getbtn:hover{opacity:.85}
+@media(max-width:560px){.wm-wrap{flex-direction:column;max-width:96%}.wm-left{width:100%;border-right:none;border-bottom:1px solid #1e2d45}.wm-right{padding:18px}}
+</style>
+
+<div id="walletModal" class="wm-bg">
+  <div class="wm-wrap">
+    <div class="wm-left">
+      <div class="wm-hdr"><span>Hubungkan Dompet</span><button onclick="closeWalletModal()">✕</button></div>
+      <div id="wm-inst-sec">
+        <div class="wm-lbl" id="wm-inst-lbl">Terinstal</div>
+        <div id="wm-inst"></div>
+        <div class="wm-lbl" style="margin-top:10px">Semua Wallet</div>
+      </div>
+      <div id="wm-all"></div>
+    </div>
+    <div class="wm-right">
+      <div class="wm-ri">🔑</div>
+      <div class="wm-rt">Apa itu Dompet?</div>
+      <div class="wm-card"><div class="wm-ci">🏠</div><div><div class="wm-cn">Rumah Aset Digital Anda</div><div class="wm-cd">Simpan, kirim, dan terima token MTK serta aset digital lainnya di Arc Testnet.</div></div></div>
+      <div class="wm-card"><div class="wm-ci">🔐</div><div><div class="wm-cn">Login Tanpa Akun</div><div class="wm-cd">Cukup hubungkan dompet — tidak perlu daftar. Kompatibel dengan Arc Testnet (Chain ID: 5042002).</div></div></div>
+      <a href="https://metamask.io/download" target="_blank" class="wm-getbtn">Dapatkan Dompet →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ Wallet Modal Logic ══
+const _WALLETS = [
+  {id:'metamask',name:'MetaMask',img:'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/SVG_MetaMask_Icon_Color.svg',fb:'🦊',
+   detect(){return window.ethereum?.providers?window.ethereum.providers.some(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):!!(window.ethereum?.isMetaMask&&!window.ethereum?.isRabby)},
+   get(){return window.ethereum?.providers?window.ethereum.providers.find(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):window.ethereum},url:'https://metamask.io/download'},
+  {id:'rabby',name:'Rabby Wallet',img:'https://avatars.githubusercontent.com/u/88048799?s=200',fb:'🐇',
+   detect(){return !!(window.ethereum?.providers?.some(p=>p.isRabby)||window.ethereum?.isRabby||window.rabby)},
+   get(){if(window.ethereum?.providers){const r=window.ethereum.providers.find(p=>p.isRabby);if(r)return r;}return window.ethereum?.isRabby?window.ethereum:window.rabby||null},url:'https://rabby.io'},
+  {id:'okx',name:'OKX Wallet',img:'https://avatars.githubusercontent.com/u/103673752?s=200',fb:'⭕',
+   detect(){return!!(window.okxwallet)},get(){return window.okxwallet},url:'https://www.okx.com/web3'},
+  {id:'phantom',name:'Phantom',img:'https://avatars.githubusercontent.com/u/78663438?s=200',fb:'👻',
+   detect(){return!!(window.phantom?.ethereum)},get(){return window.phantom?.ethereum},url:'https://phantom.app'},
+  {id:'subwallet',name:'SubWallet',img:'https://avatars.githubusercontent.com/u/91851715?s=200',fb:'🟣',
+   detect(){return!!(window.SubWallet||window.injectedWeb3?.['subwallet-js'])},get(){return window.SubWallet||window.injectedWeb3?.['subwallet-js']||null},url:'https://www.subwallet.app'},
+  {id:'bitget',name:'Bitget Wallet',img:'https://avatars.githubusercontent.com/u/107128773?s=200',fb:'🔷',
+   detect(){return!!(window.bitkeep?.ethereum)},get(){return window.bitkeep?.ethereum},url:'https://web3.bitget.com'}
+];
+
+function openWalletModal(){
+  _buildWalletModal();
+  document.getElementById('walletModal').classList.add('open');
+}
+function closeWalletModal(){
+  document.getElementById('walletModal').classList.remove('open');
+}
+document.getElementById('walletModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeWalletModal();});
+
+function _buildWalletModal(){
+  const saved=localStorage.getItem('arc_wallet')||localStorage.getItem('connectedWallet');
+  const inst=_WALLETS.filter(w=>w.detect());
+  const notInst=_WALLETS.filter(w=>!w.detect());
+  const iEl=document.getElementById('wm-inst');
+  const aEl=document.getElementById('wm-all');
+  iEl.innerHTML=''; aEl.innerHTML='';
+  document.getElementById('wm-inst-sec').style.display=inst.length?'':'none';
+  function row(w,ok){
+    const b=document.createElement('button');
+    b.className='wm-row'+(ok?'':' dim');
+    const isRecent=w.id===saved;
+    const badge=ok?`<span class="wm-badge ${isRecent?'b-new':'b-ok'}">${isRecent?'Terkini':'Terinstal'}</span>`:`<span class="wm-badge b-get">Install</span>`;
+    b.innerHTML=`<div class="wm-icon"><img src="${w.img}" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none">${w.fb}</span></div><div><div class="wm-wname">${w.name}</div>${badge}</div>`;
+    b.onclick=()=>ok?(closeWalletModal(),_connectFromModal(w)):window.open(w.url,'_blank');
+    return b;
+  }
+  inst.forEach(w=>iEl.appendChild(row(w,true)));
+  notInst.forEach(w=>aEl.appendChild(row(w,false)));
+}
+
+async function _connectFromModal(w){
+  try{
+    const raw=w.get();
+    if(!raw){window.open(w.url,'_blank');return;}
+    const prov=new ethers.BrowserProvider(raw);
+    await prov.send('eth_requestAccounts',[]);
+    const net=await prov.getNetwork();
+    const ARC_HEX='0x'+Number(5042002).toString(16);
+    if(Number(net.chainId)!==5042002){
+      try{await raw.request({method:'wallet_switchEthereumChain',params:[{chainId:ARC_HEX}]});}
+      catch(se){if(se.code===4902)await raw.request({method:'wallet_addEthereumChain',params:[{chainId:ARC_HEX,chainName:'Arc Network Testnet',nativeCurrency:{name:'USD Coin',symbol:'USDC',decimals:6},rpcUrls:['https://rpc.testnet.arc.network'],blockExplorerUrls:['https://testnet.arcscan.app']}]});}
+    }
+    localStorage.setItem('arc_wallet',w.id);
+    // Panggil connectWallet yang sudah ada di index.html dengan provider baru
+    if(typeof connectWallet === 'function'){
+      window._selectedProvider = raw;
+      await connectWallet(raw);
+    } else {
+      // fallback: reload agar auto-connect via localStorage
+      location.reload();
+    }
+    raw.on('accountsChanged',a=>a.length?location.reload():disconnectWallet());
+    raw.on('chainChanged',()=>location.reload());
+  }catch(e){
+    console.error(e);
+    alert(e.message?.includes('rejected')?'Koneksi ditolak.':'Error: '+(e.shortMessage||e.message));
+  }
+}
+
+// Wire up tombol Connect Wallet yang ada
+setTimeout(()=>{
+  const btn=document.getElementById('connectBtn');
+  if(btn){
+    const old=btn.cloneNode(true);
+    btn.parentNode.replaceChild(old,btn);
+    old.addEventListener('click',e=>{e.stopPropagation();openWalletModal();});
+  }
+},300);
+</script>
+
 </body>
 </html>
