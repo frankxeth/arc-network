@@ -862,6 +862,7 @@ async function confirmBet() {
     statusEl.innerHTML = `✓ Confirmed! Block #${receipt.blockNumber}\nTx: <a href="${ARC_EXPLORER}/tx/${tx.hash}" target="_blank" style="color:inherit">${tx.hash.slice(0,18)}... ↗</a>`;
     showToast(`${currentBetSide.toUpperCase()} bet confirmed!`, `${amt} MTK on "${currentBetMarket.question.slice(0,40)}..."`, 'ok');
     btn.innerHTML = '✓ Bet placed!';
+    setTimeout(() => { btn.disabled = false; btn.className = 'confirm-btn ' + currentBetSide; btn.textContent = 'Confirm ' + currentBetSide.toUpperCase() + ' Bet'; closeBetModal(); }, 2000);
 
     // Update card odds
     updateCardOdds(currentBetMarket.id);
