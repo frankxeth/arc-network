@@ -1,0 +1,32 @@
+{
+  "name": "deploy-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-wallet": "tsx --env-file=.env create-wallet.ts",
+    "deploy-erc20": "tsx --env-file=.env deploy-erc20.ts",
+    "deploy-erc721": "tsx --env-file=.env deploy-erc721.ts",
+    "deploy-erc1155": "tsx --env-file=.env deploy-erc1155.ts",
+    "deploy-airdrop": "tsx --env-file=.env deploy-airdrop.ts",
+    "check-transaction": "tsx --env-file=.env check-transaction.ts",
+    "interact-erc20": "tsx --env-file=.env interact-erc20.ts",
+    "interact-erc721": "tsx --env-file=.env interact-erc721.ts",
+    "interact-erc1155": "tsx --env-file=.env interact-erc1155.ts",
+    "interact-airdrop": "tsx --env-file=.env interact-airdrop.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^10.3.1",
+    "@circle-fin/smart-contract-platform": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}

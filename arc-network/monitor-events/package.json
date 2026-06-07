@@ -1,0 +1,24 @@
+{
+  "name": "monitor-events",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-monitor": "tsx --env-file=.env create-monitor.ts",
+    "get-event-logs": "tsx --env-file=.env get-event-logs.ts",
+    "start": "tsx index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@circle-fin/smart-contract-platform": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}

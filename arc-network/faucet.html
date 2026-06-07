@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTK Faucet — ARC-ID</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0b0e1a;
+  --nav:      #0f1420;
+  --panel:    #131929;
+  --panel2:   #1a2235;
+  --border:   #1e2d45;
+  --border2:  #253350;
+  --accent:   #00d4ff;
+  --accent2:  #0099cc;
+  --green:    #00e676;
+  --yellow:   #ffc107;
+  --red:      #ff5252;
+  --text:     #e8edf5;
+  --muted:    #5a7090;
+  --muted2:   #8aa0be;
+  --mono:     'JetBrains Mono', monospace;
+  --sans:     'Inter', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--sans)}
+
+/* ── Topnav ── */
+.topnav{
+  display:flex;align-items:center;gap:0;
+  background:var(--nav);
+  border-bottom:1px solid var(--border);
+  height:52px;padding:0 24px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:32px}
+.nav-logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#00d4ff,#0066cc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.nav-logo-text{font-weight:700;font-size:15px;color:var(--text)}
+.nav-logo-text span{color:var(--accent)}
+
+.nav-tabs{display:flex;height:100%}
+.nav-tab{
+  display:flex;align-items:center;gap:6px;
+  padding:0 16px;font-size:13px;font-weight:500;
+  color:var(--muted2);text-decoration:none;
+  border-bottom:2px solid transparent;
+  transition:color .15s,border-color .15s;
+  cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;
+}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-tab .tab-dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.6}
+
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-addr{
+  font-family:var(--mono);font-size:11px;color:var(--muted2);
+  background:var(--panel2);border:1px solid var(--border);
+  padding:5px 12px;border-radius:6px;
+}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.nav-connect-btn{
+  font-size:12px;font-weight:600;font-family:var(--sans);
+  background:var(--accent);color:#000;
+  border:none;padding:6px 14px;border-radius:6px;cursor:pointer;
+  transition:opacity .15s;
+}
+.nav-connect-btn:hover{opacity:.85}
+.nav-connect-btn.outline{
+  background:transparent;color:var(--accent);
+  border:1px solid var(--accent);
+}
+
+/* ── Layout ── */
+.page{max-width:680px;margin:0 auto;padding:32px 16px 64px}
+
+/* ── Breadcrumb ── */
+.breadcrumb{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--muted);margin-bottom:24px;
+}
+.breadcrumb a{color:var(--muted2);text-decoration:none}
+.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb span{color:var(--muted)}
+
+/* ── Faucet card ── */
+.faucet-header{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:28px;
+}
+.faucet-icon{
+  width:56px;height:56px;border-radius:14px;
+  background:linear-gradient(135deg,#00d4ff22,#0066cc33);
+  border:1px solid #00d4ff33;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+}
+.faucet-title{font-size:22px;font-weight:700;color:var(--text)}
+.faucet-subtitle{font-size:13px;color:var(--muted2);margin-top:3px;line-height:1.5}
+
+/* ── Info table ── */
+.info-table{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:16px;
+}
+.info-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 20px;border-bottom:1px solid var(--border);
+}
+.info-row:last-child{border-bottom:none}
+.info-key{font-size:13px;color:var(--muted2)}
+.info-val{font-size:13px;font-weight:600;color:var(--text);font-family:var(--mono)}
+.info-val.green{color:var(--green)}
+.info-val.accent{color:var(--accent)}
+
+/* ── Contract box ── */
+.contract-box{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:10px;
+}
+.contract-label{font-size:11px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.contract-addr{font-family:var(--mono);font-size:11px;color:var(--muted2);word-break:break-all}
+.copy-btn{
+  background:var(--panel2);border:1px solid var(--border2);
+  color:var(--muted2);font-size:11px;padding:5px 10px;
+  border-radius:6px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:color .15s,border-color .15s;
+}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ── Connect / Claim section ── */
+#connect-section{}
+
+/* Wallet grid */
+.wallet-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.wallet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.w-btn{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:13px 8px;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;
+  transition:border-color .15s,background .15s,transform .12s;position:relative;
+}
+.w-btn:hover:not(.disabled){border-color:var(--accent);background:rgba(0,212,255,.05);transform:translateY(-1px)}
+.w-btn.disabled{opacity:.38}
+.w-btn.disabled::after{
+  content:'install';position:absolute;top:5px;right:7px;
+  font-size:8px;font-family:var(--mono);color:var(--yellow);text-transform:uppercase;
+}
+.w-icon{font-size:22px;line-height:1}
+.w-name{font-size:10px;font-weight:500;color:var(--text);text-align:center}
+
+/* Connected state */
+.connected-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;margin-bottom:16px;overflow:hidden;
+}
+.connected-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+}
+.c-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:blink 2s infinite}
+.c-wallet-name{font-size:12px;font-weight:500;color:var(--muted2)}
+.c-addr{font-family:var(--mono);font-size:12px;color:var(--text);flex:1}
+.disc-btn{
+  font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;
+  padding:3px 8px;border-radius:4px;transition:color .15s;
+}
+.disc-btn:hover{color:var(--red)}
+
+.balance-grid{display:grid;grid-template-columns:1fr 1fr;padding:16px 18px;gap:16px}
+.bal-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.bal-value{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)}
+.bal-value small{font-size:12px;color:var(--muted2);font-weight:400;margin-left:4px}
+.bal-usdc-ok{color:var(--green)}
+.bal-usdc-low{color:var(--yellow)}
+
+/* Claim button */
+.claim-btn{
+  width:100%;padding:15px;font-size:15px;font-weight:700;
+  font-family:var(--sans);border:none;border-radius:10px;cursor:pointer;
+  background:linear-gradient(90deg,#00d4ff,#0099ff);
+  color:#000;letter-spacing:.02em;
+  transition:opacity .15s,transform .12s;position:relative;overflow:hidden;
+  margin-bottom:12px;
+}
+.claim-btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+.claim-btn:disabled{background:var(--panel2);color:var(--muted);cursor:not-allowed;border:1px solid var(--border)}
+.claim-btn.shimmer::after{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  animation:sh 1s infinite;
+}
+@keyframes sh{to{left:160%}}
+
+/* Cooldown bar */
+.cd-bar{height:3px;background:var(--panel2);border-radius:100px;margin-bottom:10px;overflow:hidden}
+.cd-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#0099ff);border-radius:100px;transition:width .4s}
+
+/* Status */
+.status-msg{font-size:12px;text-align:center;min-height:16px;color:var(--muted2)}
+.status-msg.ok{color:var(--green)}
+.status-msg.err{color:var(--red)}
+.status-msg.warn{color:var(--yellow)}
+.status-msg.info{color:var(--accent)}
+
+.tx-link{display:block;text-align:center;font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none;margin-top:6px}
+.tx-link:hover{text-decoration:underline}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* Back link */
+.back-link{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--muted2);text-decoration:none;margin-top:8px;transition:color .15s}
+.back-link:hover{color:var(--accent)}
+
+/* Network warning */
+.net-warn{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);
+  border-radius:8px;padding:10px 14px;font-size:12px;color:var(--yellow);
+  margin-bottom:14px;
+}
+
+.hidden{display:none!important}
+
+/* Responsive */
+@media(max-width:480px){
+  .wallet-grid{grid-template-columns:repeat(3,1fr)}
+  .balance-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Topnav -->
+<nav class="topnav">
+  <a class="nav-logo" href="index.html">
+    <div class="nav-logo-icon">⬡</div>
+    <span class="nav-logo-text">ARC<span>-ID</span></span>
+  </a>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html"><span class="tab-dot"></span>Markets</a>
+    <button class="nav-tab active"><span class="tab-dot"></span>Faucet</button>
+    <a class="nav-tab" href="https://testnet.arcscan.app" target="_blank">Explorer ↗</a>
+  </div>
+  <div class="nav-right" id="nav-right">
+    <button class="nav-connect-btn" onclick="openWalletModal()">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- Page -->
+<div class="page">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">Home</a>
+    <span>›</span>
+    <span style="color:var(--text)">MTK Faucet</span>
+  </div>
+
+  <!-- Faucet header -->
+  <div class="faucet-header">
+    <div class="faucet-icon">💧</div>
+    <div>
+      <div class="faucet-title">MTK Faucet</div>
+      <div class="faucet-subtitle">Claim 100 MTK every 24 hours to place bets on ARC-ID<br>Predict Market on Arc Testnet.</div>
+    </div>
+  </div>
+
+  <!-- Info table -->
+  <div class="info-table">
+    <div class="info-row"><span class="info-key">Amount</span><span class="info-val green">100 MTK / day</span></div>
+    <div class="info-row"><span class="info-key">Cooldown</span><span class="info-val">24 hours</span></div>
+    <div class="info-row"><span class="info-key">Network</span><span class="info-val accent">Arc Testnet</span></div>
+    <div class="info-row"><span class="info-key">Chain ID</span><span class="info-val">5042002</span></div>
+  </div>
+
+  <!-- Contract address -->
+  <div class="contract-box">
+    <div>
+      <div class="contract-label">Faucet Contract</div>
+      <div class="contract-addr" id="faucet-addr-display">0xbab2a22f35293bdf51a537c34ff23dacca1da612</div>
+    </div>
+    <button class="copy-btn" onclick="copyAddr()">Copy</button>
+  </div>
+
+  <!-- Network warning (hidden by default) -->
+  <div class="net-warn hidden" id="net-warn">
+    ⚠️ Wrong network — please switch to Arc Testnet (Chain ID: 5042002)
+  </div>
+
+  <!-- CONNECT SECTION (not connected) -->
+  <div id="connect-section">
+    <div class="wallet-label">Choose wallet to connect &nbsp;<button onclick="buildGrids()" style="font-size:10px;background:none;border:1px solid var(--border2);color:var(--muted2);padding:2px 8px;border-radius:4px;cursor:pointer;font-family:var(--mono)">↻ Refresh</button></div>
+    <div class="wallet-grid" id="wallet-grid"></div>
+  </div>
+
+  <!-- CLAIM SECTION (connected) -->
+  <div id="claim-section" class="hidden">
+
+    <!-- Connected card -->
+    <div class="connected-card">
+      <div class="connected-header">
+        <div class="c-dot"></div>
+        <div>
+          <div class="c-wallet-name" id="wallet-name-label">MetaMask</div>
+        </div>
+        <div class="c-addr" id="c-addr-display">—</div>
+        <button class="disc-btn" onclick="disconnect()">✕ Disconnect</button>
+      </div>
+      <div class="balance-grid">
+        <div class="bal-item">
+          <div class="bal-label">MTK Balance</div>
+          <div class="bal-value" id="mtk-bal">—<small>MTK</small></div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-label">USDC (gas)</div>
+          <div class="bal-value" id="usdc-bal">—<small>USDC</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claim button -->
+    <button class="claim-btn" id="claim-btn" onclick="claimMTK()">Claim 100 MTK</button>
+
+    <!-- Cooldown bar -->
+    <div class="cd-bar"><div class="cd-fill" id="cd-fill" style="width:100%"></div></div>
+
+    <div class="status-msg" id="status-msg"></div>
+    <a class="tx-link hidden" id="tx-link" target="_blank"></a>
+  </div>
+
+  <div class="divider"></div>
+  <a class="back-link" href="index.html">← Back to ARC-ID Predict Market</a>
+</div>
+
+<!-- Wallet modal (full overlay) -->
+<div id="w-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;width:90%;max-width:360px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:16px;font-weight:700">Connect Wallet</span>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--muted2);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted2);margin-bottom:20px">Select your wallet extension to connect to Arc Testnet.</p>
+    <div class="wallet-grid" id="modal-wallet-grid"></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:14px;text-align:center">Dimmed = not installed. Click to install.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+<script>
+// ─── Config ────────────────────────────────────────────────
+const CHAIN_ID   = 5042002;
+const CHAIN_HEX  = '0x' + CHAIN_ID.toString(16);
+const RPC        = 'https://rpc.testnet.arc.network';
+const EXPLORER   = 'https://testnet.arcscan.app';
+const FAUCET     = '0xbab2a22f35293bdf51a537c34ff23dacca1da612';
+const MTK        = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
+const LS_KEY     = 'arc_wallet';  // persist wallet choice
+
+const ERC20_ABI  = ['function balanceOf(address) view returns (uint256)'];
+const FAUCET_ABI = ['function claim() external','function lastClaim(address) view returns (uint256)','function cooldown() view returns (uint256)'];
+
+// ─── Wallets ────────────────────────────────────────────────
+const WALLETS = [
+  {
+    id:'metamask', name:'MetaMask', icon:'🦊',
+    detect(){ return window.ethereum?.providers ? window.ethereum.providers.some(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep) : !!(window.ethereum?.isMetaMask&&!window.ethereum?.isRabby&&!window.ethereum?.isBitKeep) },
+    get(){ return window.ethereum?.providers ? window.ethereum.providers.find(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep) : window.ethereum },
+    url:'https://metamask.io/download'
+  },
+  {
+    id:'rabby', name:'Rabby', icon:'🐇',
+    detect(){
+      // providers array (MetaMask + Rabby co-exist)
+      if (window.ethereum?.providers?.some(p=>p.isRabby)) return true;
+      // sole injector
+      if (window.ethereum?.isRabby) return true;
+      // some Rabby builds expose window.rabby
+      if (window.rabby) return true;
+      // EIP-6963 style check
+      if (window.ethereum?._isRabby) return true;
+      return false;
+    },
+    get(){
+      if (window.ethereum?.providers) {
+        const r = window.ethereum.providers.find(p=>p.isRabby);
+        if (r) return r;
+      }
+      if (window.ethereum?.isRabby || window.ethereum?._isRabby) return window.ethereum;
+      if (window.rabby) return window.rabby;
+      return null;
+    },
+    url:'https://rabby.io'
+  },
+  {
+    id:'okx', name:'OKX', icon:'⭕',
+    detect(){ return !!(window.okxwallet) },
+    get(){ return window.okxwallet },
+    url:'https://www.okx.com/web3'
+  },
+  {
+    id:'bitget', name:'Bitget', icon:'🔷',
+    detect(){ return !!(window.bitkeep?.ethereum) },
+    get(){ return window.bitkeep?.ethereum },
+    url:'https://web3.bitget.com'
+  },
+  {
+    id:'phantom', name:'Phantom', icon:'👻',
+    detect(){ return !!(window.phantom?.ethereum) },
+    get(){ return window.phantom?.ethereum },
+    url:'https://phantom.app'
+  },
+  {
+    id:'subwallet', name:'SubWallet', icon:'🟣',
+    detect(){ return !!(window.SubWallet||window.injectedWeb3?.['subwallet-js']) },
+    get(){ return window.SubWallet||window.injectedWeb3?.['subwallet-js']||null },
+    url:'https://www.subwallet.app'
+  }
+];
+
+// ─── State ──────────────────────────────────────────────────
+let provider=null, signer=null, account=null, activeWallet=null;
+
+// ─── Init ───────────────────────────────────────────────────
+window.addEventListener('load', async ()=>{
+  // Delay 600ms — beri waktu extension inject ke window.ethereum
+  await new Promise(r => setTimeout(r, 600));
+  buildGrids();
+  // Auto-reconnect from localStorage
+  const saved = localStorage.getItem(LS_KEY);
+  if(saved){
+    const w = WALLETS.find(x=>x.id===saved);
+    if(w && w.detect()) await connectWallet(w, true);
+  }
+});
+
+function buildGrids(){
+  [document.getElementById('wallet-grid'), document.getElementById('modal-wallet-grid')].forEach(grid=>{
+    grid.innerHTML='';
+    WALLETS.forEach(w=>{
+      const ok = w.detect();
+      const btn = document.createElement('button');
+      btn.className = 'w-btn'+(ok?'':' disabled');
+      btn.innerHTML = `<span class="w-icon">${w.icon}</span><span class="w-name">${w.name}</span>`;
+      btn.onclick = ()=> ok ? (closeModal(), connectWallet(w)) : window.open(w.url,'_blank');
+      grid.appendChild(btn);
+    });
+  });
+}
+
+// ─── Connect ────────────────────────────────────────────────
+async function connectWallet(w, silent=false){
+  try {
+    if(!silent) setStatus('Connecting '+w.name+'...','info');
+    const raw = w.get();
+    if(!raw){ window.open(w.url,'_blank'); return; }
+
+    provider = new ethers.BrowserProvider(raw);
+    await provider.send('eth_requestAccounts',[]);
+
+    const net = await provider.getNetwork();
+    if(Number(net.chainId) !== CHAIN_ID){
+      document.getElementById('net-warn').classList.remove('hidden');
+      await switchChain(raw);
+      document.getElementById('net-warn').classList.add('hidden');
+    }
+
+    signer  = await provider.getSigner();
+    account = await signer.getAddress();
+    activeWallet = w;
+    localStorage.setItem(LS_KEY, w.id);
+
+    showConnected(w);
+    await loadBalances();
+    await checkCooldown();
+    if(!silent) setStatus('✓ Connected via '+w.name,'ok');
+
+    raw.on('accountsChanged', a=> a.length ? location.reload() : disconnect());
+    raw.on('chainChanged', ()=> location.reload());
+
+  } catch(e){
+    console.error(e);
+    if(!silent) setStatus(e.message?.includes('rejected')||e.code===4001 ? 'Rejected by user.' : 'Error: '+(e.shortMessage||e.message),'err');
+  }
+}
+
+async function switchChain(raw){
+  try {
+    await raw.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_HEX}]});
+  } catch(e){
+    if(e.code===4902){
+      await raw.request({method:'wallet_addEthereumChain',params:[{
+        chainId:CHAIN_HEX, chainName:'Arc Network Testnet',
+        nativeCurrency:{name:'USD Coin',symbol:'USDC',decimals:6},
+        rpcUrls:[RPC], blockExplorerUrls:[EXPLORER]
+      }]});
+    } else throw e;
+  }
+  provider = new ethers.BrowserProvider(raw);
+  signer = await provider.getSigner();
+}
+
+function showConnected(w){
+  document.getElementById('connect-section').classList.add('hidden');
+  document.getElementById('claim-section').classList.remove('hidden');
+  document.getElementById('c-addr-display').textContent = account.slice(0,6)+'...'+account.slice(-4);
+  document.getElementById('wallet-name-label').textContent = w.name;
+  // topnav
+  const nr = document.getElementById('nav-right');
+  nr.innerHTML = `<div class="nav-dot"></div><div class="nav-addr">${account.slice(0,6)}...${account.slice(-4)}</div>`;
+}
+
+function disconnect(){
+  localStorage.removeItem(LS_KEY);
+  provider=null; signer=null; account=null; activeWallet=null;
+  document.getElementById('connect-section').classList.remove('hidden');
+  document.getElementById('claim-section').classList.add('hidden');
+  document.getElementById('tx-link').classList.add('hidden');
+  const nr = document.getElementById('nav-right');
+  nr.innerHTML = `<button class="nav-connect-btn" onclick="openWalletModal()">Connect Wallet</button>`;
+  setStatus('','');
+}
+
+// ─── Balances ───────────────────────────────────────────────
+async function loadBalances(){
+  try {
+    const mtk = new ethers.Contract(MTK, ERC20_ABI, provider);
+    const [mtkRaw, usdcRaw] = await Promise.all([
+      mtk.balanceOf(account),
+      provider.getBalance(account)
+    ]);
+    const mtkVal  = parseFloat(ethers.formatUnits(mtkRaw,18)).toFixed(2);
+    const usdcVal = parseFloat(ethers.formatUnits(usdcRaw,6)).toFixed(4);
+
+    document.getElementById('mtk-bal').innerHTML  = `${mtkVal}<small>MTK</small>`;
+    const uel = document.getElementById('usdc-bal');
+    if(parseFloat(usdcVal)<0.001){
+      uel.innerHTML = `<span class="bal-usdc-low">${usdcVal}</span><small>USDC ⚠️</small>`;
+    } else {
+      uel.innerHTML = `<span class="bal-usdc-ok">${usdcVal}</span><small>USDC</small>`;
+    }
+  } catch(e){ console.error(e); }
+}
+
+// ─── Cooldown ────────────────────────────────────────────────
+async function checkCooldown(){
+  try {
+    const f = new ethers.Contract(FAUCET, FAUCET_ABI, provider);
+    const [last, cd] = await Promise.all([
+      f.lastClaim(account).catch(()=>0n),
+      f.cooldown().catch(()=>86400n)
+    ]);
+    const now  = BigInt(Math.floor(Date.now()/1000));
+    const next = last + cd;
+    const btn  = document.getElementById('claim-btn');
+    const fill = document.getElementById('cd-fill');
+
+    if(last===0n || now>=next){
+      btn.disabled=false; btn.textContent='Claim 100 MTK'; fill.style.width='100%';
+    } else {
+      const rem   = Number(next-now);
+      const total = Number(cd);
+      fill.style.width = Math.max(0,Math.min(100,((total-rem)/total)*100))+'%';
+      const h=Math.floor(rem/3600), m=Math.floor((rem%3600)/60);
+      btn.disabled=true; btn.textContent=`⏳ Next claim in ${h}h ${m}m`;
+      setStatus(`Cooldown active — try again in ${h}h ${m}m`,'warn');
+    }
+  } catch(e){ document.getElementById('claim-btn').disabled=false; }
+}
+
+// ─── Claim ───────────────────────────────────────────────────
+async function claimMTK(){
+  if(!signer) return;
+  const btn = document.getElementById('claim-btn');
+  try {
+    btn.disabled=true; btn.classList.add('shimmer'); btn.textContent='Claiming...';
+    setStatus('Sending transaction...','info');
+    const f  = new ethers.Contract(FAUCET, FAUCET_ABI, signer);
+    const tx = await f.claim();
+    setStatus('⏳ Confirming...','info');
+    const rc = await tx.wait();
+    const tl = document.getElementById('tx-link');
+    tl.href=`${EXPLORER}/tx/${rc.hash}`;
+    tl.textContent='→ View tx: '+rc.hash.slice(0,12)+'...';
+    tl.classList.remove('hidden');
+    btn.classList.remove('shimmer');
+    btn.textContent='✓ Claimed!';
+    setStatus('✅ 100 MTK successfully claimed!','ok');
+    await loadBalances();
+    await checkCooldown();
+  } catch(e){
+    console.error(e);
+    btn.classList.remove('shimmer'); btn.disabled=false; btn.textContent='Claim 100 MTK';
+    if(e.message?.includes('rejected')||e.code===4001) setStatus('Transaction rejected.','warn');
+    else if(e.message?.includes('insufficient')||e.message?.includes('gas')) setStatus('⚠️ Not enough USDC for gas fee.','err');
+    else if(e.message?.includes('cooldown')||e.message?.includes('wait')) setStatus('⏳ Still on cooldown. Wait 24h.','warn');
+    else setStatus('Error: '+(e.shortMessage||e.reason||e.message),'err');
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+function setStatus(m,t){ const el=document.getElementById('status-msg'); el.textContent=m; el.className='status-msg '+(t||''); }
+function openWalletModal(){ document.getElementById('w-modal').style.display='flex'; }
+function closeModal(){ document.getElementById('w-modal').style.display='none'; }
+function copyAddr(){
+  navigator.clipboard.writeText(FAUCET).then(()=>{ const b=document.querySelector('.copy-btn'); b.textContent='Copied!'; setTimeout(()=>b.textContent='Copy',2000); });
+}
+
+// Close modal on bg click
+document.getElementById('w-modal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
+</script>
+</body>
+</html>
