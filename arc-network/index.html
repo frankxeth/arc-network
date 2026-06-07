@@ -409,7 +409,33 @@ nav{
   <div class="toast-body" id="toastBody"></div>
 </div>
 
-<!-- WALLET MODAL -->
+<!-- WALLET DROPDOWN -->
+<style>
+.wd{position:absolute;top:52px;right:0;z-index:9999;background:#131929;border:1px solid #253350;border-radius:12px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;overflow:hidden}
+.wd.open{display:block}
+.wd-addr{padding:14px 16px 10px;border-bottom:1px solid #1e2d45}
+.wd-addr-label{font-size:10px;color:#5a7090;font-family:monospace;margin-bottom:2px}
+.wd-addr-val{font-size:13px;font-weight:600;color:#e8edf5;font-family:monospace}
+.wd-bal{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #1e2d45}
+.wd-bal-item{flex:1;font-size:11px;color:#8aa0be}
+.wd-bal-item b{display:block;font-size:13px;color:#e8edf5;font-family:monospace}
+.wd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;color:#e8edf5;border:none;background:none;width:100%;text-align:left;transition:background .12s}
+.wd-item:hover{background:rgba(255,255,255,.05)}
+.wd-item.red{color:#ff4466}
+</style>
+<div id="walletDropdown" class="wd">
+  <div class="wd-addr">
+    <div class="wd-addr-label">Connected</div>
+    <div class="wd-addr-val" id="dropAddress">—</div>
+  </div>
+  <div class="wd-bal">
+    <div class="wd-bal-item"><span>MTK</span><b id="dropMtk">—</b></div>
+    <div class="wd-bal-item"><span>USDC</span><b id="dropUsdc">—</b></div>
+  </div>
+  <button class="wd-item" onclick="copyWalletAddress()">Copy address</button>
+  <button class="wd-item" onclick="changeWallet()">Change wallet</button>
+  <button class="wd-item red" onclick="disconnectWallet()">Disconnect</button>
+</div>
 
 
 <!-- BET MODAL -->
@@ -1049,7 +1075,7 @@ async function connectWallet() {
     console.error('Connect error:', e);
   }
 }
-function handleConnectBtn() {
+function _handleConnectBtn_old() {
   if (userAddress) {
     const d = document.getElementById('walletDropdown');
     d.style.display = d.style.display === 'block' ? 'none' : 'block';
@@ -1074,7 +1100,32 @@ document.addEventListener('click', function(e) {
 
 
 <script>
+function copyWalletAddress() {
+  const addr = userAddress || window.userAddress;
+  if (!addr) return;
+  navigator.clipboard.writeText(addr).then(() => showToast('Address copied', addr, 'ok'));
+  document.getElementById('walletDropdown').classList.remove('open');
+}
+function changeWallet() {
+  document.getElementById('walletDropdown').classList.remove('open');
+  openWalletModal();
+}
 function handleConnectBtn() {
+  const addr = (typeof userAddress !== "undefined" && userAddress) || window.userAddress;
+  if (addr) {
+    const d = document.getElementById("walletDropdown");
+    const isOpen = d.classList.contains("open");
+    d.classList.toggle("open");
+    if (!isOpen) {
+      document.getElementById("dropAddress").textContent = addr.slice(0,8)+"..."+addr.slice(-6);
+      document.getElementById("dropMtk").textContent = (window.userMtk||"-")+" MTK";
+      document.getElementById("dropUsdc").textContent = (window.userUsdc||"-")+" USDC";
+    }
+    return;
+  }
+  openWalletModal();
+}
+function _handleConnectBtn_unused() {
   if (typeof userAddress !== "undefined" && userAddress) {
     const d = document.getElementById("walletDropdown");
     d.style.display = d.style.display === "block" ? "none" : "block";
