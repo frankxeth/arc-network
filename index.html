@@ -1354,4 +1354,19 @@ setTimeout(()=>{
   </div>
 </footer>
 </body>
-</html>
+</html><script>
+function handleConnectBtn() {
+  const addr = (typeof userAddress !== "undefined" && userAddress) || window.userAddress;
+  if (addr) {
+    const d = document.getElementById("walletDropdown");
+    d.classList.toggle("open");
+    if (d.classList.contains("open")) {
+      document.getElementById("dropAddress").textContent = addr.slice(0,8)+"..."+addr.slice(-6);
+      document.getElementById("dropMtk").textContent = (window.userMtk||"-")+" MTK";
+      document.getElementById("dropUsdc").textContent = (window.userUsdc||"-")+" USDC";
+    }
+  } else {
+    openWalletModal();
+  }
+}
+</script>
