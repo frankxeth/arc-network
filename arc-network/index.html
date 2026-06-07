@@ -904,12 +904,12 @@ function renderMarkets(markets) {
       <div class="card-tag">${m.tag}</div>
     </div>
     <div class="card-odds-row">
-      <div class="card-odds yes" onclick="openBetModal('${m.id}','yes')">
+      <div class="card-odds yes" onclick="event.stopPropagation();openBetModal('${m.id}','yes')">
         <div class="card-odds-label">YES</div>
         <div class="card-odds-pct yes-pct">${m.yes}%</div>
         <div class="card-odds-price">${(m.yes/100).toFixed(2)}¢</div>
       </div>
-      <div class="card-odds no" onclick="openBetModal('${m.id}','no')">
+      <div class="card-odds no" onclick="event.stopPropagation();openBetModal('${m.id}','no')">
         <div class="card-odds-label">NO</div>
         <div class="card-odds-pct no-pct">${100 - m.yes}%</div>
         <div class="card-odds-price">${((100-m.yes)/100).toFixed(2)}¢</div>
@@ -930,10 +930,10 @@ function renderHeroFeatured() {
   el.innerHTML = `
     <div class="hf-question">${m.question}</div>
     <div class="hf-odds">
-      <div class="odds-pill yes" onclick="openBetModal('${m.id}','yes')">
+      <div class="odds-pill yes" onclick="event.stopPropagation();openBetModal('${m.id}','yes')">
         YES<small>${m.yes}%</small>
       </div>
-      <div class="odds-pill no" onclick="openBetModal('${m.id}','no')">
+      <div class="odds-pill no" onclick="event.stopPropagation();openBetModal('${m.id}','no')">
         NO<small>${100 - m.yes}%</small>
       </div>
     </div>
