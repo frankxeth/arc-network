@@ -820,7 +820,8 @@ function updateBetSummary() {
 }
 
 async function confirmBet() {
-  if (!signer || !currentBetMarket) return;
+  if (!currentBetMarket) return;
+  if (!signer) { const p = new ethers.BrowserProvider(window._selectedProvider||window.ethereum); signer = await p.getSigner(); userAddress = await signer.getAddress(); }
   const amt = parseFloat(document.getElementById('betAmountInput').value);
   if (!amt || amt <= 0) { showToast('Enter an amount', '', 'wait'); return; }
 
