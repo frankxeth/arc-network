@@ -1476,10 +1476,16 @@ setTimeout(()=>{
     document.body.appendChild(dd);
     document.getElementById('wdd-disc').onclick = function(){
       removeDD();
-      localStorage.removeItem('arc_wallet');
-      localStorage.removeItem('connectedWallet');
-      if(typeof disconnectWallet==='function') disconnectWallet();
-      else location.reload();
+      // Clear semua state
+      window.userAddress = null;
+      window.userAccount = null;
+      window.currentAccount = null;
+      window.signer = null;
+      window.provider = null;
+      // Clear localStorage
+      localStorage.clear();
+      // Force reload - cara paling reliable
+      location.reload();
     };
     setTimeout(function(){
       document.addEventListener('click', function h(e){
