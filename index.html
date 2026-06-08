@@ -417,7 +417,7 @@ nav{
 
 <!-- WALLET DROPDOWN -->
 <style>
-.wd{position:absolute;top:52px;right:0;z-index:9999;background:#131929;border:1px solid #253350;border-radius:12px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;overflow:hidden}
+.wd{position:fixed;top:62px;right:24px;z-index:9999;background:#131929;border:1px solid #253350;border-radius:12px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;overflow:hidden}
 .wd.open{display:block}
 .wd-addr{padding:14px 16px 10px;border-bottom:1px solid #1e2d45}
 .wd-addr-label{font-size:10px;color:#5a7090;font-family:monospace;margin-bottom:2px}
@@ -1094,9 +1094,13 @@ function _handleConnectBtn_old() {
   } else { openModal(); }
 }
 function disconnectWallet() {
-  document.getElementById('walletDropdown').style.display = 'none';
-  onDisconnect();
+  var d = document.getElementById('walletDropdown');
+  if(d) d.classList.remove('open');
+  userAddress=null; signer=null; provider=null;
+  window.userAddress=null; window.userMtk=null; window.userUsdc=null;
   localStorage.removeItem('connectedWallet');
+  localStorage.removeItem('arc_wallet');
+  onDisconnect();
 }
 document.addEventListener('click', function(e) {
   const btn = document.getElementById('connectBtn');
@@ -1146,7 +1150,7 @@ function _handleConnectBtn_unused() {
 document.addEventListener("click", function(e) {
   const btn = document.getElementById("connectBtn");
   const d = document.getElementById("walletDropdown");
-  if (d && btn && !btn.contains(e.target) && !d.contains(e.target)) d.style.display = "none";
+  if (d && btn && !btn.contains(e.target) && !d.contains(e.target)) d.classList.remove('open');
 });
 </script>
 
@@ -1282,15 +1286,7 @@ async function _connectFromModal(w){
   }
 }
 
-// Wire up tombol Connect Wallet yang ada
-setTimeout(()=>{
-  const btn=document.getElementById('connectBtn');
-  if(btn){
-    const old=btn.cloneNode(true);
-    btn.parentNode.replaceChild(old,btn);
-    old.addEventListener('click',e=>{e.stopPropagation();openWalletModal();});
-  }
-},300);
+// connectBtn via onclick=handleConnectBtn()
 </script>
 
 
@@ -1360,140 +1356,5 @@ setTimeout(()=>{
   </div>
 </footer>
 
-<!-- ══ Connected wallet dropdown ══ -->
-    <div>
-      <div class="wcd-wallet-name" id="wcd-wallet-name">MetaMask</div>
-      <div class="wcd-addr" id="wcd-addr-full">0x0000...0000</div>
-    </div>
-  </div>
-
-  <div class="wcd-body">
-    <button class="wcd-item" onclick="wcdCopyAddress()">
-      <span class="wcd-item-icon">📋</span> Copy Address
-    </button>
-    <button class="wcd-item" onclick="wcdOpenExplorer()">
-      <span class="wcd-item-icon">🔍</span> Lihat di Explorer
-    </button>
-    <div class="wcd-sep"></div>
-    <button class="wcd-item" onclick="wcdChangeWallet()">
-      <span class="wcd-item-icon">🔄</span> Ganti Wallet
-    </button>
-    <div class="wcd-sep"></div>
-    <button class="wcd-item danger" onclick="wcdDisconnect()">
-      <span class="wcd-item-icon">⏻</span> Disconnect
-    </button>
-  </div>
-
-  <div class="wcd-bal" id="wcd-bal">
-    <div class="wcd-bal-row">
-      <span class="wcd-bal-label">MTK</span>
-      <span class="wcd-bal-val" id="wcd-mtk">—</span>
-    </div>
-    <div class="wcd-bal-row">
-      <span class="wcd-bal-label">USDC (gas)</span>
-      <span class="wcd-bal-val" id="wcd-usdc">—</span>
-    </div>
-  </div>
-
-  <a class="wcd-explorer" id="wcd-explorer-link" href="#" target="_blank">
-    ↗ Buka di ArcScan
-  </a>
-</div>
-
-
-
-
-
-
-<!-- ══ Connected wallet dropdown ══ -->
-
-    <div>
-      <div class="wcd-wallet-name" id="wcd-wallet-name">MetaMask</div>
-      <div class="wcd-addr" id="wcd-addr-full">0x0000...0000</div>
-    </div>
-  </div>
-
-  <div class="wcd-body">
-    <button class="wcd-item" onclick="wcdCopyAddress()">
-      <span class="wcd-item-icon">📋</span> Copy Address
-    </button>
-    <button class="wcd-item" onclick="wcdOpenExplorer()">
-      <span class="wcd-item-icon">🔍</span> Lihat di Explorer
-    </button>
-    <div class="wcd-sep"></div>
-    <button class="wcd-item" onclick="wcdChangeWallet()">
-      <span class="wcd-item-icon">🔄</span> Ganti Wallet
-    </button>
-    <div class="wcd-sep"></div>
-    <button class="wcd-item danger" onclick="wcdDisconnect()">
-      <span class="wcd-item-icon">⏻</span> Disconnect
-    </button>
-  </div>
-
-  <div class="wcd-bal" id="wcd-bal">
-    <div class="wcd-bal-row">
-      <span class="wcd-bal-label">MTK</span>
-      <span class="wcd-bal-val" id="wcd-mtk">—</span>
-    </div>
-    <div class="wcd-bal-row">
-      <span class="wcd-bal-label">USDC (gas)</span>
-      <span class="wcd-bal-val" id="wcd-usdc">—</span>
-    </div>
-  </div>
-
-  <a class="wcd-explorer" id="wcd-explorer-link" href="#" target="_blank">
-    ↗ Buka di ArcScan
-  </a>
-</div>
-
-
-
-
-
-
-
-
-
-<style>.wdd{position:fixed;background:#131929;border:1px solid #253350;border-radius:10px;padding:6px;min-width:180px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);font-family:Inter,sans-serif}.wdd-addr{padding:8px 12px;font-size:12px;color:#8aa0be;border-bottom:1px solid #1e2d45;margin-bottom:4px;font-family:monospace}.wdd-dbtn{display:block;width:100%;padding:9px 12px;background:none;border:none;text-align:left;font-size:13px;cursor:pointer;border-radius:6px;color:#ff7070}.wdd-dbtn:hover{background:rgba(255,82,82,.1)}</style>
-<script>
-(function(){
-  var _dd=null;
-  function _rm(){if(_dd){_dd.remove();_dd=null;}}
-  function _show(btn){
-    _rm();
-    var addr=window.userAddress||window.userAccount||(window.ethereum&&window.ethereum.selectedAddress)||'';
-    _dd=document.createElement('div');
-    _dd.className='wdd';
-    _dd.innerHTML='<div class="wdd-addr">'+(addr?addr.slice(0,6)+'...'+addr.slice(-4):'Connected')+'</div><button class="wdd-dbtn">⏻ Disconnect</button>';
-    var r=btn.getBoundingClientRect();
-    _dd.style.top=(r.bottom+6)+'px';
-    _dd.style.right=(window.innerWidth-r.right)+'px';
-    _dd.style.position='fixed';
-    document.body.appendChild(_dd);
-    _dd.querySelector('.wdd-dbtn').onclick=function(){
-      _rm();
-      window.userAddress=null;window.userAccount=null;window.currentAccount=null;
-      window.signer=null;window.provider=null;
-      localStorage.clear();
-      location.reload();
-    };
-    setTimeout(function(){document.addEventListener('click',function h(e){if(_dd&&!_dd.contains(e.target)){_rm();document.removeEventListener('click',h);}});},100);
-  }
-  var _wired=false;
-  setInterval(function(){
-    if(_wired)return;
-    var btn=document.getElementById('connectBtn');
-    if(!btn)return;
-    var addr=window.userAddress||window.userAccount||(window.ethereum&&window.ethereum.selectedAddress);
-    if(addr){
-      _wired=true;
-      btn.addEventListener('click',function(e){
-        var a=window.userAddress||window.userAccount||(window.ethereum&&window.ethereum.selectedAddress);
-        if(a){e.stopImmediatePropagation();e.preventDefault();_show(btn);}
-      },true);
-    }
-  },500);
-})();
-</script>
 </body>
 </html>
