@@ -402,7 +402,11 @@ nav{
             <a href="faucet.html" class="nav-link" style="text-decoration:none">Faucet 🚰</a>
   </div>
   <div class="nav-right">
-    <div class="vol-chip">Vol 24h: <b id="navVol">$—</b></div>
+    <div style="display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;color:#545670;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);padding:4px 10px;border-radius:6px">
+      <div style="width:5px;height:5px;border-radius:50%;background:#00c896;box-shadow:0 0 6px rgba(0,200,150,0.6)"></div>
+      Testnet Live
+    </div>
+    
     <button id="connectBtn" onclick="handleConnectBtn()">
       <span id="connectBtnContent">Connect Wallet</span>
     </button>
@@ -1336,10 +1340,7 @@ async function _connectFromModal(w){
     </div>
     <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div style="font-size:11px;color:#545670">© 2025 ARC-ID. Built on Arc Testnet · Chain ID 5042002</div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <div style="width:5px;height:5px;border-radius:50%;background:#00c896;box-shadow:0 0 6px rgba(0,200,150,0.5)"></div>
-        <span style="font-family:'DM Mono',monospace;font-size:10px;color:#545670">Testnet Live</span>
-      </div>
+      
     </div>
   </div>
 </footer>
