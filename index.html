@@ -1215,7 +1215,7 @@ document.addEventListener("click", function(e) {
 <script>
 // ══ Wallet Modal Logic ══
 const _WALLETS = [
-  {id:'metamask',name:'MetaMask',img:'https://www.google.com/s2/favicons?sz=64&domain=bitget.com',fb:'🦊',
+  {id:'metamask',name:'MetaMask',img:'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/SVG_MetaMask_Icon_Color.svg',fb:'🦊',
    detect(){return window.ethereum?.providers?window.ethereum.providers.some(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):!!(window.ethereum?.isMetaMask&&!window.ethereum?.isRabby)},
    get(){return window.ethereum?.providers?window.ethereum.providers.find(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):window.ethereum},url:'https://metamask.io/download'},
   {id:'rabby',name:'Rabby Wallet',img:'https://www.google.com/s2/favicons?sz=64&domain=rabby.io',fb:'🐇',
