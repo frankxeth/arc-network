@@ -1451,64 +1451,49 @@ setTimeout(()=>{
 
 
 
-<style>
-.wdd{position:fixed;background:#131929;border:1px solid #253350;border-radius:10px;padding:6px;min-width:180px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-.wdd-addr{padding:8px 12px;font-size:12px;color:#8aa0be;border-bottom:1px solid #1e2d45;margin-bottom:4px;font-family:monospace}
-.wdd-btn{display:block;width:100%;padding:8px 12px;background:none;border:none;text-align:left;font-size:13px;cursor:pointer;border-radius:6px;color:#ff7070}
-.wdd-btn:hover{background:rgba(255,82,82,.1)}
-</style>
+
+
+
+<style>.wdd{position:fixed;background:#131929;border:1px solid #253350;border-radius:10px;padding:6px;min-width:180px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.6);font-family:Inter,sans-serif}.wdd-addr{padding:8px 12px;font-size:12px;color:#8aa0be;border-bottom:1px solid #1e2d45;margin-bottom:4px;font-family:monospace}.wdd-dbtn{display:block;width:100%;padding:9px 12px;background:none;border:none;text-align:left;font-size:13px;cursor:pointer;border-radius:6px;color:#ff7070}.wdd-dbtn:hover{background:rgba(255,82,82,.1)}</style>
 <script>
 (function(){
-  var dd = null;
-
-  function removeDD(){ if(dd){ dd.remove(); dd=null; } }
-
-  function showDD(btn){
-    removeDD();
-    var addr = window.userAddress || window.ethereum && window.ethereum.selectedAddress || '';
-    dd = document.createElement('div');
-    dd.className = 'wdd';
-    dd.innerHTML = '<div class="wdd-addr">'+(addr?addr.slice(0,6)+'...'+addr.slice(-4):'Connected')+'</div>'
-      + '<button class="wdd-btn" id="wdd-disc">⏻ Disconnect</button>';
-    var r = btn.getBoundingClientRect();
-    dd.style.top = (r.bottom+6)+'px';
-    dd.style.right = (window.innerWidth-r.right)+'px';
-    document.body.appendChild(dd);
-    document.getElementById('wdd-disc').onclick = function(){
-      removeDD();
-      // Clear semua state
-      window.userAddress = null;
-      window.userAccount = null;
-      window.currentAccount = null;
-      window.signer = null;
-      window.provider = null;
-      // Clear localStorage
+  var _dd=null;
+  function _rm(){if(_dd){_dd.remove();_dd=null;}}
+  function _show(btn){
+    _rm();
+    var addr=window.userAddress||window.userAccount||(window.ethereum&&window.ethereum.selectedAddress)||'';
+    _dd=document.createElement('div');
+    _dd.className='wdd';
+    _dd.innerHTML='<div class="wdd-addr">'+(addr?addr.slice(0,6)+'...'+addr.slice(-4):'Connected')+'</div><button class="wdd-dbtn">⏻ Disconnect</button>';
+    var r=btn.getBoundingClientRect();
+    _dd.style.top=(r.bottom+6)+'px';
+    _dd.style.right=(window.innerWidth-r.right)+'px';
+    _dd.style.position='fixed';
+    document.body.appendChild(_dd);
+    _dd.querySelector('.wdd-dbtn').onclick=function(){
+      _rm();
+      window.userAddress=null;window.userAccount=null;window.currentAccount=null;
+      window.signer=null;window.provider=null;
       localStorage.clear();
-      // Force reload - cara paling reliable
       location.reload();
     };
-    setTimeout(function(){
-      document.addEventListener('click', function h(e){
-        if(dd && !dd.contains(e.target)){ removeDD(); document.removeEventListener('click',h); }
-      });
-    }, 100);
+    setTimeout(function(){document.addEventListener('click',function h(e){if(_dd&&!_dd.contains(e.target)){_rm();document.removeEventListener('click',h);}});},100);
   }
-
-  // Watch connectBtn - kalau sudah ada address, intercept click
+  var _wired=false;
   setInterval(function(){
-    var btn = document.getElementById('connectBtn');
-    if(!btn) return;
-    var addr = window.userAddress || window.ethereum && window.ethereum.selectedAddress;
-    if(addr && !btn.dataset.ddwired){
-      btn.dataset.ddwired = '1';
-      btn.addEventListener('click', function(e){
-        var a = window.userAddress || window.ethereum && window.ethereum.selectedAddress;
-        if(a){ e.stopImmediatePropagation(); e.preventDefault(); showDD(btn); }
-      }, true);
+    if(_wired)return;
+    var btn=document.getElementById('connectBtn');
+    if(!btn)return;
+    var addr=window.userAddress||window.userAccount||(window.ethereum&&window.ethereum.selectedAddress);
+    if(addr){
+      _wired=true;
+      btn.addEventListener('click',function(e){
+        var a=window.userAddress||window.userAccount||(window.ethereum&&window.ethereum.selectedAddress);
+        if(a){e.stopImmediatePropagation();e.preventDefault();_show(btn);}
+      },true);
     }
-  }, 500);
+  },500);
 })();
 </script>
-
 </body>
 </html>
