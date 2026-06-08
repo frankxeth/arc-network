@@ -1267,7 +1267,7 @@ async function _connectFromModal(w){
     const ARC_HEX='0x'+Number(5042002).toString(16);
     if(Number(net.chainId)!==5042002){
       try{await raw.request({method:'wallet_switchEthereumChain',params:[{chainId:ARC_HEX}]});}
-      catch(se){if(se.code===4902)await raw.request({method:'wallet_addEthereumChain',params:[{chainId:ARC_HEX,chainName:'Arc Network Testnet',nativeCurrency:{name:'USD Coin',symbol:'USDC',decimals:6},rpcUrls:['https://rpc.testnet.arc.network'],blockExplorerUrls:['https://testnet.arcscan.app']}]});}
+      catch(se){if(se.code===4902)await raw.request({method:'wallet_addEthereumChain',params:[{chainId:ARC_HEX,chainName:'Arc Network Testnet',nativeCurrency:{name:'USD Coin',symbol:'USDC',decimals:18},rpcUrls:['https://rpc.testnet.arc.network'],blockExplorerUrls:['https://testnet.arcscan.app']}]});}
     }
     localStorage.setItem('arc_wallet',w.id);
     // Panggil connectWallet yang sudah ada di index.html dengan provider baru
