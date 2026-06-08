@@ -1,5 +1,3 @@
-# 🔷 Arc Network — Developer Tutorials
-
 
 ---
 
@@ -35,8 +33,7 @@ On-chain prediction market where users bet **MTK tokens** on real-world outcomes
 
 ---
 
-
-> Built for the **[Stablecoin Commerce Stack Challenge](https://app.ignyte.ae/public/challenges/4B436318-C737-F111-9A49-6045BD14D400)** · Powered by [Circle](https://developers.circle.com) · Running on [Arc Testnet](https://www.arc.io)
+> # 🔷 Arc Network — Developer Tutorials
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-78.7%25-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Solidity](https://img.shields.io/badge/Solidity-2%25-363636?logo=solidity)](https://soliditylang.org)
