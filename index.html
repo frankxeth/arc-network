@@ -1789,3 +1789,146 @@ document.addEventListener('DOMContentLoaded', function(){
   }, 1000);
 });
 </script>
+<script>
+(function(){
+  // Fix address sync - baca dari button text jika window.userAddress kosong
+  function _getAddr(){
+    var a = window.userAddress||window.userAccount||window.currentAccount||window.connectedAddress;
+    if(a && a !== '0x0000000000000000000000000000000000000000') return a;
+    // Fallback: baca dari button text
+    var btn = document.getElementById('connectBtn');
+    if(btn){
+      var txt = btn.textContent || btn.innerText;
+      var m = txt.match(/0x[a-fA-F0-9]{4}\.\.+[a-fA-F0-9]{4}/);
+      if(m){
+        // Cek localStorage untuk full address
+        var full = localStorage.getItem('walletAddress')||localStorage.getItem('arc_address');
+        if(full && full.length===42) return full;
+      }
+    }
+    // Coba dari ethereum accounts
+    if(window.ethereum && window.ethereum.selectedAddress) return window.ethereum.selectedAddress;
+    return null;
+  }
+
+  // Override dropdown open untuk inject address benar
+  var _origListener = null;
+  function _openDropdownFixed(){
+    var addr = _getAddr();
+    var dd = document.getElementById('wcDropdown');
+    if(!dd) return;
+    var btn = document.getElementById('connectBtn');
+    var r = btn.getBoundingClientRect();
+    dd.style.top=(r.bottom+8)+'px';
+    dd.style.right=(window.innerWidth-r.right)+'px';
+
+    // Update address display
+    if(addr){
+      var short = addr.slice(0,6)+'...'+addr.slice(-4);
+      var wa = document.getElementById('wcd-addr');
+      var ex = document.getElementById('wcd-ex-link');
+      if(wa) wa.textContent = short;
+      if(ex) ex.href = 'https://testnet.arcscan.app/address/'+addr;
+      // Save for later
+      window._wcRealAddr = addr;
+      localStorage.setItem('arc_address', addr);
+      _loadBalFixed(addr);
+    }
+    dd.classList.add('open');
+  }
+
+  async function _loadBalFixed(addr){
+    try{
+      var ETH = window.ethereum||window._selectedProvider;
+      if(!ETH||!window.ethers) return;
+      var p = new ethers.BrowserProvider(ETH);
+      var ERC20 = ['function balanceOf(address) view returns (uint256)'];
+      var MTK = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
+      var me = document.getElementById('wcd-mtk');
+      var ue = document.getElementById('wcd-usdc');
+      var res = await Promise.all([
+        new ethers.Contract(MTK,ERC20,p).balanceOf(addr),
+        p.getBalance(addr)
+      ]);
+      if(me) me.textContent = parseFloat(ethers.formatUnits(res[0],18)).toFixed(2)+' MTK';
+      if(ue) ue.textContent = parseFloat(ethers.formatUnits(res[1],6)).toFixed(4)+' USDC';
+    }catch(e){ console.warn('bal:',e); }
+  }
+
+  // Override semua action functions dengan address yang benar
+  window.wcdCopy = function(){
+    var a = window._wcRealAddr||_getAddr();
+    if(!a){alert('Wallet tidak terdeteksi');return;}
+    navigator.clipboard.writeText(a).then(function(){
+      var t=document.getElementById('wc-toast');
+      if(t){t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}
+    });
+    document.getElementById('wcDropdown')?.classList.remove('open');
+  };
+
+  window.wcdExplorer = function(){
+    var a = window._wcRealAddr||_getAddr();
+    if(a) window.open('https://testnet.arcscan.app/address/'+a,'_blank');
+    document.getElementById('wcDropdown')?.classList.remove('open');
+  };
+
+  window.wcdChange = function(){
+    document.getElementById('wcDropdown')?.classList.remove('open');
+    if(typeof openWalletModal==='function') openWalletModal();
+  };
+
+  window.wcdDisc = function(){
+    document.getElementById('wcDropdown')?.classList.remove('open');
+    window._wcRealAddr = null;
+    localStorage.removeItem('arc_wallet');
+    localStorage.removeItem('connectedWallet');
+    localStorage.removeItem('arc_address');
+    // Reset button
+    var btn = document.getElementById('connectBtn');
+    if(btn){
+      btn.classList.remove('wc-connected');
+      btn.innerHTML = '<span id="connectBtnContent">Connect Wallet</span>';
+      btn.onclick = function(e){ e.stopPropagation(); openWalletModal(); };
+    }
+    if(typeof disconnectWallet==='function') disconnectWallet();
+    else location.reload();
+  };
+
+  // Re-intercept click dengan address yang benar
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      // Capture address dari ethereum
+      if(window.ethereum && window.ethereum.selectedAddress){
+        window._wcRealAddr = window.ethereum.selectedAddress;
+        localStorage.setItem('arc_address', window.ethereum.selectedAddress);
+      }
+
+      var btn = document.getElementById('connectBtn');
+      if(!btn) return;
+      // Remove semua listener lama dengan clone
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function(e){
+        var addr = window._wcRealAddr||window.userAddress||window.ethereum?.selectedAddress||_getAddr();
+        if(addr && addr !== '0x0000000000000000000000000000000000000000' && addr.length===42){
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          var dd = document.getElementById('wcDropdown');
+          if(dd && dd.classList.contains('open')){dd.classList.remove('open');return;}
+          _openDropdownFixed();
+        } else {
+          openWalletModal();
+        }
+      }, true);
+
+      // Watch ethereum.selectedAddress
+      setInterval(function(){
+        if(window.ethereum?.selectedAddress && window.ethereum.selectedAddress !== window._wcRealAddr){
+          window._wcRealAddr = window.ethereum.selectedAddress;
+          localStorage.setItem('arc_address', window.ethereum.selectedAddress);
+        }
+      }, 500);
+    }, 1500);
+  });
+})();
+</script>
