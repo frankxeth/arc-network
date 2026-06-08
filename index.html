@@ -1705,3 +1705,42 @@ function handleConnectBtn() {
   }
 }
 </script>
+<script>
+// Fix: update connectBtn setelah wallet konek
+const _origConnect = window._connectFromModal;
+window._connectFromModal = async function(w){
+  await _origConnect(w);
+  setTimeout(function(){
+    var addr = window.userAddress || window.userAccount || window.currentAccount;
+    if(addr && addr.length === 42){
+      var btn = document.getElementById('connectBtn');
+      if(btn && !btn.classList.contains('wc-connected')){
+        var short = addr.slice(0,6)+'...'+addr.slice(-4);
+        var img = w.img||''; var fb = w.fb||'W';
+        btn.classList.add('wc-connected');
+        btn.innerHTML = '<div class="wc-dot"></div><span>'+short+'</span><span class="wc-chevron">▾</span>';
+        btn.onclick = function(e){
+          e.stopPropagation();
+          var dd = document.getElementById('wcDropdown');
+          if(!dd) return;
+          if(dd.classList.contains('open')){ dd.classList.remove('open'); return; }
+          var r = btn.getBoundingClientRect();
+          dd.style.top=(r.bottom+8)+'px';
+          dd.style.right=(window.innerWidth-r.right)+'px';
+          dd.classList.add('open');
+        };
+        var wn=document.getElementById('wcd-wn');
+        var wa=document.getElementById('wcd-addr');
+        var ex=document.getElementById('wcd-ex-link');
+        if(wn) wn.textContent=w.name||'Wallet';
+        if(wa) wa.textContent=short;
+        if(ex) ex.href='https://testnet.arcscan.app/address/'+addr;
+        var aFb=document.getElementById('wcd-av-fb');
+        var aImg=document.getElementById('wcd-av-img');
+        if(aFb) aFb.textContent=fb;
+        if(aImg&&img){aImg.src=img;aImg.style.display='block';if(aFb)aFb.style.display='none';}
+      }
+    }
+  }, 1200);
+};
+</script>
