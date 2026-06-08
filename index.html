@@ -1047,6 +1047,34 @@ async function connectWallet() {
   }
   try {
     const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
+
+    // accountsChanged listener - update UI saat ganti wallet
+    window.ethereum.removeAllListeners('accountsChanged');
+    window.ethereum.on('accountsChanged', function(newAccounts) {
+      if (newAccounts.length === 0) {
+        // Disconnect
+        window.userAddress = null;
+        window._wcRealAddr = null;
+        localStorage.removeItem('arc_address');
+        const btn = document.getElementById('connectBtn');
+        if (btn) { btn.textContent = 'Connect Wallet'; btn.classList.remove('connected'); }
+        const dd = document.getElementById('walletDropdown');
+        if (dd) dd.classList.remove('open');
+      } else {
+        const newAddr = newAccounts[0];
+        window.userAddress = newAddr;
+        window._wcRealAddr = newAddr;
+        const short = newAddr.slice(0,6) + '...' + newAddr.slice(-4);
+        const btn = document.getElementById('connectBtn');
+        if (btn) btn.textContent = short;
+        const addrEl = document.getElementById('wcd-addr');
+        if (addrEl) addrEl.textContent = short;
+      }
+    });
+
+    window.ethereum.on('chainChanged', function() {
+      window.location.reload();
+    });
     const address = accounts[0];
     window.userAddress = address;
     const short = address.slice(0,6) + '...' + address.slice(-4);
