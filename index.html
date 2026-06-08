@@ -1215,19 +1215,19 @@ document.addEventListener("click", function(e) {
 <script>
 // ══ Wallet Modal Logic ══
 const _WALLETS = [
-  {id:'metamask',name:'MetaMask',img:'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/SVG_MetaMask_Icon_Color.svg',fb:'🦊',
+  {id:'metamask',name:'MetaMask',img:'https://cdn.jsdelivr.net/npm/@web3icons/core@latest/icons/wallets/color/bitget.svg',fb:'🦊',
    detect(){return window.ethereum?.providers?window.ethereum.providers.some(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):!!(window.ethereum?.isMetaMask&&!window.ethereum?.isRabby)},
    get(){return window.ethereum?.providers?window.ethereum.providers.find(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):window.ethereum},url:'https://metamask.io/download'},
-  {id:'rabby',name:'Rabby Wallet',img:'https://avatars.githubusercontent.com/u/88048799?s=200',fb:'🐇',
+  {id:'rabby',name:'Rabby Wallet',img:'https://cdn.jsdelivr.net/npm/@web3icons/core@latest/icons/wallets/color/rabby.svg',fb:'🐇',
    detect(){return !!(window.ethereum?.providers?.some(p=>p.isRabby)||window.ethereum?.isRabby||window.rabby)},
    get(){if(window.ethereum?.providers){const r=window.ethereum.providers.find(p=>p.isRabby);if(r)return r;}return window.ethereum?.isRabby?window.ethereum:window.rabby||null},url:'https://rabby.io'},
-  {id:'okx',name:'OKX Wallet',img:'https://avatars.githubusercontent.com/u/103673752?s=200',fb:'⭕',
+  {id:'okx',name:'OKX Wallet',img:'https://cdn.jsdelivr.net/npm/@web3icons/core@latest/icons/wallets/color/okx.svg',fb:'⭕',
    detect(){return!!(window.okxwallet)},get(){return window.okxwallet},url:'https://www.okx.com/web3'},
-  {id:'phantom',name:'Phantom',img:'https://avatars.githubusercontent.com/u/78663438?s=200',fb:'👻',
+  {id:'phantom',name:'Phantom',img:'https://cdn.jsdelivr.net/npm/@web3icons/core@latest/icons/wallets/color/phantom.svg',fb:'👻',
    detect(){return!!(window.phantom?.ethereum)},get(){return window.phantom?.ethereum},url:'https://phantom.app'},
-  {id:'subwallet',name:'SubWallet',img:'https://avatars.githubusercontent.com/u/91851715?s=200',fb:'🟣',
+  {id:'subwallet',name:'SubWallet',img:'https://cdn.jsdelivr.net/npm/@web3icons/core@latest/icons/wallets/color/subwallet.svg',fb:'🟣',
    detect(){return!!(window.SubWallet||window.injectedWeb3?.['subwallet-js'])},get(){return window.SubWallet||window.injectedWeb3?.['subwallet-js']||null},url:'https://www.subwallet.app'},
-  {id:'bitget',name:'Bitget Wallet',img:'https://avatars.githubusercontent.com/u/107128773?s=200',fb:'🔷',
+  {id:'bitget',name:'Bitget Wallet',img:'https://cdn.jsdelivr.net/npm/@web3icons/core@latest/icons/wallets/color/bitget.svg',fb:'🔷',
    detect(){return!!(window.bitkeep?.ethereum)},get(){return window.bitkeep?.ethereum},url:'https://web3.bitget.com'}
 ];
 
