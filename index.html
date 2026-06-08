@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -863,11 +864,21 @@ function updateBetSummary() {
 
 async function confirmBet() {
   if (!currentBetMarket) return;
-  if (!signer || !userAddress) {
+    // Recover signer jika wallet masih connected
+    if (!signer && window.ethereum) {
+      try {
+        const _rp = new ethers.BrowserProvider(window.ethereum);
+        signer = await _rp.getSigner();
+        if (!userAddress) userAddress = await signer.getAddress();
+        window.userAddress = userAddress;
+      } catch(e) { signer = null; }
+    }
+    if (!signer || !(userAddress || window.userAddress || window._wcRealAddr)) {
       showToast('Please connect your wallet first', '', 'wait');
       openWalletModal();
       return;
     }
+    if (!userAddress) userAddress = window.userAddress || window._wcRealAddr;
   const amt = parseFloat(document.getElementById('betAmountInput').value);
   if (!amt || amt <= 0) { showToast('Enter an amount', '', 'wait'); return; }
 
