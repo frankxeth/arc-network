@@ -380,6 +380,9 @@ nav{
 }
 </style>
 
+
+
+
 <style id="wd-style">
 /* ── Connected wallet button + dropdown ── */
 #connectBtn.wc-connected {
@@ -692,19 +695,19 @@ const localBets = {}; // marketId → {yes, no} extra volume
 const MARKETS = [
   {
     id:'m1', tag:'Arc Network', category:'arc',
-    question:'Will Arc Network mainnet launch before Q4 2026?',
+    question:'Will Arc Network mainnet launch before Q4 2025?',
     yes:68, vol:8420, exp:'Sep 30, 2026', featured:true,
     detail:'Arc is currently in public testnet. Prediction is based on developer activity and official roadmap signals.'
   },
   {
     id:'m2', tag:'Crypto', category:'crypto',
-    question:'Will Bitcoin hit $120,000 by end of 2026?',
+    question:'Will Bitcoin hit $120,000 by end of 2025?',
     yes:54, vol:15600, exp:'Dec 31, 2026', featured:false,
     detail:'Based on historical cycles and current market structure.'
   },
   {
     id:'m3', tag:'DeFi', category:'defi',
-    question:'Will total DeFi TVL exceed $300B in 2026?',
+    question:'Will total DeFi TVL exceed $300B in 2025?',
     yes:42, vol:6200, exp:'Dec 31, 2026', featured:false,
     detail:'Current TVL trajectory and macro conditions factor in.'
   },
@@ -716,7 +719,7 @@ const MARKETS = [
   },
   {
     id:'m5', tag:'Tech', category:'tech',
-    question:'Will a major AI lab announce GPT-5 class model by mid-2026?',
+    question:'Will a major AI lab announce GPT-5 class model by mid-2025?',
     yes:83, vol:11200, exp:'Jun 30, 2026', featured:false,
     detail:'Based on publicly known research pipelines and announcements.'
   },
@@ -728,7 +731,7 @@ const MARKETS = [
   },
   {
     id:'m7', tag:'DeFi', category:'defi',
-    question:'Will Circle USDC stablecoin maintain $1 peg throughout 2026?',
+    question:'Will Circle USDC stablecoin maintain $1 peg throughout 2025?',
     yes:91, vol:5100, exp:'Dec 31, 2026', featured:false,
     detail:'Circle is the issuer of USDC and the primary gas token on Arc Network.'
   },
@@ -1472,6 +1475,51 @@ setTimeout(()=>{
 </footer>
 
 <!-- ══ Connected wallet dropdown ══ -->
+    <div>
+      <div class="wcd-wallet-name" id="wcd-wallet-name">MetaMask</div>
+      <div class="wcd-addr" id="wcd-addr-full">0x0000...0000</div>
+    </div>
+  </div>
+
+  <div class="wcd-body">
+    <button class="wcd-item" onclick="wcdCopyAddress()">
+      <span class="wcd-item-icon">📋</span> Copy Address
+    </button>
+    <button class="wcd-item" onclick="wcdOpenExplorer()">
+      <span class="wcd-item-icon">🔍</span> Lihat di Explorer
+    </button>
+    <div class="wcd-sep"></div>
+    <button class="wcd-item" onclick="wcdChangeWallet()">
+      <span class="wcd-item-icon">🔄</span> Ganti Wallet
+    </button>
+    <div class="wcd-sep"></div>
+    <button class="wcd-item danger" onclick="wcdDisconnect()">
+      <span class="wcd-item-icon">⏻</span> Disconnect
+    </button>
+  </div>
+
+  <div class="wcd-bal" id="wcd-bal">
+    <div class="wcd-bal-row">
+      <span class="wcd-bal-label">MTK</span>
+      <span class="wcd-bal-val" id="wcd-mtk">—</span>
+    </div>
+    <div class="wcd-bal-row">
+      <span class="wcd-bal-label">USDC (gas)</span>
+      <span class="wcd-bal-val" id="wcd-usdc">—</span>
+    </div>
+  </div>
+
+  <a class="wcd-explorer" id="wcd-explorer-link" href="#" target="_blank">
+    ↗ Buka di ArcScan
+  </a>
+</div>
+
+
+
+
+
+
+<!-- ══ Connected wallet dropdown ══ -->
 <div id="wcDropdown">
   <div class="wcd-header">
     <div class="wcd-avatar" id="wcd-avatar"><span id="wcd-avatar-fb">🦊</span><img id="wcd-avatar-img" src="" style="display:none"></div>
@@ -1689,246 +1737,4 @@ setTimeout(()=>{
 </script>
 
 </body>
-</html><script>
-function handleConnectBtn() {
-  const addr = (typeof userAddress !== "undefined" && userAddress) || window.userAddress;
-  if (addr) {
-    const d = document.getElementById("walletDropdown");
-    d.classList.toggle("open");
-    if (d.classList.contains("open")) {
-      document.getElementById("dropAddress").textContent = addr.slice(0,8)+"..."+addr.slice(-6);
-      document.getElementById("dropMtk").textContent = (window.userMtk||"-")+" MTK";
-      document.getElementById("dropUsdc").textContent = (window.userUsdc||"-")+" USDC";
-    }
-  } else {
-    openWalletModal();
-  }
-}
-</script>
-<script>
-// Fix: update connectBtn setelah wallet konek
-const _origConnect = window._connectFromModal;
-window._connectFromModal = async function(w){
-  await _origConnect(w);
-  setTimeout(function(){
-    var addr = window.userAddress || window.userAccount || window.currentAccount;
-    if(addr && addr.length === 42){
-      var btn = document.getElementById('connectBtn');
-      if(btn && !btn.classList.contains('wc-connected')){
-        var short = addr.slice(0,6)+'...'+addr.slice(-4);
-        var img = w.img||''; var fb = w.fb||'W';
-        btn.classList.add('wc-connected');
-        btn.innerHTML = '<div class="wc-dot"></div><span>'+short+'</span><span class="wc-chevron">▾</span>';
-        btn.onclick = function(e){
-          e.stopPropagation();
-          var dd = document.getElementById('wcDropdown');
-          if(!dd) return;
-          if(dd.classList.contains('open')){ dd.classList.remove('open'); return; }
-          var r = btn.getBoundingClientRect();
-          dd.style.top=(r.bottom+8)+'px';
-          dd.style.right=(window.innerWidth-r.right)+'px';
-          dd.classList.add('open');
-        };
-        var wn=document.getElementById('wcd-wn');
-        var wa=document.getElementById('wcd-addr');
-        var ex=document.getElementById('wcd-ex-link');
-        if(wn) wn.textContent=w.name||'Wallet';
-        if(wa) wa.textContent=short;
-        if(ex) ex.href='https://testnet.arcscan.app/address/'+addr;
-        var aFb=document.getElementById('wcd-av-fb');
-        var aImg=document.getElementById('wcd-av-img');
-        if(aFb) aFb.textContent=fb;
-        if(aImg&&img){aImg.src=img;aImg.style.display='block';if(aFb)aFb.style.display='none';}
-      }
-    }
-  }, 1200);
-};
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  setTimeout(function(){
-    var btn = document.getElementById('connectBtn');
-    if(!btn) return;
-    btn.addEventListener('click', function(e){
-      var addr = window.userAddress || window.userAccount || window.currentAccount;
-      if(addr && addr.length === 42){
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        var dd = document.getElementById('wcDropdown');
-        if(!dd) return;
-        if(dd.classList.contains('open')){
-          dd.classList.remove('open');
-        } else {
-          var r = btn.getBoundingClientRect();
-          dd.style.top = (r.bottom+8)+'px';
-          dd.style.right = (window.innerWidth-r.right)+'px';
-          dd.classList.add('open');
-          var me=document.getElementById('wcd-mtk');
-          var ue=document.getElementById('wcd-usdc');
-          if(me) me.textContent = 'loading...';
-          if(ue) ue.textContent = 'loading...';
-          try{
-            var p = new ethers.BrowserProvider(window.ethereum);
-            var ERC20 = ['function balanceOf(address) view returns (uint256)'];
-            var MTK = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
-            Promise.all([
-              new ethers.Contract(MTK,ERC20,p).balanceOf(addr),
-              p.getBalance(addr)
-            ]).then(function(r){
-              if(me) me.textContent = parseFloat(ethers.formatUnits(r[0],18)).toFixed(2)+' MTK';
-              if(ue) ue.textContent = parseFloat(ethers.formatUnits(r[1],6)).toFixed(4)+' USDC';
-            }).catch(function(){});
-          }catch(ex){}
-          var wa=document.getElementById('wcd-addr');
-          var ex=document.getElementById('wcd-ex-link');
-          if(wa) wa.textContent=addr.slice(0,6)+'...'+addr.slice(-4);
-          if(ex) ex.href='https://testnet.arcscan.app/address/'+addr;
-        }
-      }
-    }, true);
-  }, 1000);
-});
-</script>
-<script>
-(function(){
-  // Fix address sync - baca dari button text jika window.userAddress kosong
-  function _getAddr(){
-    var a = window.userAddress||window.userAccount||window.currentAccount||window.connectedAddress;
-    if(a && a !== '0x0000000000000000000000000000000000000000') return a;
-    // Fallback: baca dari button text
-    var btn = document.getElementById('connectBtn');
-    if(btn){
-      var txt = btn.textContent || btn.innerText;
-      var m = txt.match(/0x[a-fA-F0-9]{4}\.\.+[a-fA-F0-9]{4}/);
-      if(m){
-        // Cek localStorage untuk full address
-        var full = null;
-        if(full && full.length===42) return full;
-      }
-    }
-    // Coba dari ethereum accounts
-    if(window.ethereum && window.ethereum.selectedAddress) return window.ethereum.selectedAddress;
-    return null;
-  }
-
-  // Override dropdown open untuk inject address benar
-  var _origListener = null;
-  function _openDropdownFixed(){
-    var addr = _getAddr();
-    var dd = document.getElementById('wcDropdown');
-    if(!dd) return;
-    var btn = document.getElementById('connectBtn');
-    var r = btn.getBoundingClientRect();
-    dd.style.top=(r.bottom+8)+'px';
-    dd.style.right=(window.innerWidth-r.right)+'px';
-
-    // Update address display
-    if(addr){
-      var short = addr.slice(0,6)+'...'+addr.slice(-4);
-      var wa = document.getElementById('wcd-addr');
-      var ex = document.getElementById('wcd-ex-link');
-      if(wa) wa.textContent = short;
-      if(ex) ex.href = 'https://testnet.arcscan.app/address/'+addr;
-      // Save for later
-      window._wcRealAddr = addr;
-      localStorage.setItem('arc_address', addr);
-      _loadBalFixed(addr);
-    }
-    dd.classList.add('open');
-  }
-
-  async function _loadBalFixed(addr){
-    try{
-      var ETH = window.ethereum||window._selectedProvider;
-      if(!ETH||!window.ethers) return;
-      var p = new ethers.BrowserProvider(ETH);
-      var ERC20 = ['function balanceOf(address) view returns (uint256)'];
-      var MTK = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
-      var me = document.getElementById('wcd-mtk');
-      var ue = document.getElementById('wcd-usdc');
-      var res = await Promise.all([
-        new ethers.Contract(MTK,ERC20,p).balanceOf(addr),
-        p.getBalance(addr)
-      ]);
-      if(me) me.textContent = parseFloat(ethers.formatUnits(res[0],18)).toFixed(2)+' MTK';
-      if(ue) ue.textContent = parseFloat(ethers.formatUnits(res[1],6)).toFixed(4)+' USDC';
-    }catch(e){ console.warn('bal:',e); }
-  }
-
-  // Override semua action functions dengan address yang benar
-  window.wcdCopy = function(){
-    var a = window._wcRealAddr||_getAddr();
-    if(!a){alert('Wallet tidak terdeteksi');return;}
-    navigator.clipboard.writeText(a).then(function(){
-      var t=document.getElementById('wc-toast');
-      if(t){t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}
-    });
-    document.getElementById('wcDropdown')?.classList.remove('open');
-  };
-
-  window.wcdExplorer = function(){
-    var a = window._wcRealAddr||_getAddr();
-    if(a) window.open('https://testnet.arcscan.app/address/'+a,'_blank');
-    document.getElementById('wcDropdown')?.classList.remove('open');
-  };
-
-  window.wcdChange = function(){
-    document.getElementById('wcDropdown')?.classList.remove('open');
-    if(typeof openWalletModal==='function') openWalletModal();
-  };
-
-  window.wcdDisc = function(){
-    document.getElementById('wcDropdown')?.classList.remove('open');
-    window._wcRealAddr = null;
-    localStorage.removeItem('arc_wallet');
-    localStorage.removeItem('connectedWallet');
-    localStorage.removeItem('arc_address');
-    // Reset button
-    var btn = document.getElementById('connectBtn');
-    if(btn){
-      btn.classList.remove('wc-connected');
-      btn.innerHTML = '<span id="connectBtnContent">Connect Wallet</span>';
-      btn.onclick = function(e){ e.stopPropagation(); openWalletModal(); };
-    }
-    if(typeof disconnectWallet==='function') disconnectWallet();
-    else location.reload();
-  };
-
-  // Re-intercept click dengan address yang benar
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      // Capture address dari ethereum
-      if(window.ethereum && window.ethereum.selectedAddress){
-        window._wcRealAddr = window.ethereum.selectedAddress;
-        // removed auto-save
-      }
-
-      var btn = document.getElementById('connectBtn');
-      if(!btn) return;
-      // Remove semua listener lama dengan clone
-      var newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener('click', function(e){
-        var addr = window._wcRealAddr||window.userAddress||window.ethereum?.selectedAddress||_getAddr();
-        if(addr && addr !== '0x0000000000000000000000000000000000000000' && addr.length===42){
-          e.stopImmediatePropagation();
-          e.preventDefault();
-          var dd = document.getElementById('wcDropdown');
-          if(dd && dd.classList.contains('open')){dd.classList.remove('open');return;}
-          _openDropdownFixed();
-        } else {
-          openWalletModal();
-        }
-      }, true);
-
-      // Watch ethereum.selectedAddress
-      setInterval(function(){
-        if(window.ethereum?.selectedAddress && window.ethereum.selectedAddress !== window._wcRealAddr){
-          window._wcRealAddr = window.ethereum.selectedAddress;
-          // removed auto-save
-        }
-      }, 500);
-    }, 1500);
-  });
-})();
-</script>
+</html>
