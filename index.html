@@ -1744,3 +1744,48 @@ window._connectFromModal = async function(w){
   }, 1200);
 };
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    var btn = document.getElementById('connectBtn');
+    if(!btn) return;
+    btn.addEventListener('click', function(e){
+      var addr = window.userAddress || window.userAccount || window.currentAccount;
+      if(addr && addr.length === 42){
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        var dd = document.getElementById('wcDropdown');
+        if(!dd) return;
+        if(dd.classList.contains('open')){
+          dd.classList.remove('open');
+        } else {
+          var r = btn.getBoundingClientRect();
+          dd.style.top = (r.bottom+8)+'px';
+          dd.style.right = (window.innerWidth-r.right)+'px';
+          dd.classList.add('open');
+          var me=document.getElementById('wcd-mtk');
+          var ue=document.getElementById('wcd-usdc');
+          if(me) me.textContent = 'loading...';
+          if(ue) ue.textContent = 'loading...';
+          try{
+            var p = new ethers.BrowserProvider(window.ethereum);
+            var ERC20 = ['function balanceOf(address) view returns (uint256)'];
+            var MTK = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
+            Promise.all([
+              new ethers.Contract(MTK,ERC20,p).balanceOf(addr),
+              p.getBalance(addr)
+            ]).then(function(r){
+              if(me) me.textContent = parseFloat(ethers.formatUnits(r[0],18)).toFixed(2)+' MTK';
+              if(ue) ue.textContent = parseFloat(ethers.formatUnits(r[1],6)).toFixed(4)+' USDC';
+            }).catch(function(){});
+          }catch(ex){}
+          var wa=document.getElementById('wcd-addr');
+          var ex=document.getElementById('wcd-ex-link');
+          if(wa) wa.textContent=addr.slice(0,6)+'...'+addr.slice(-4);
+          if(ex) ex.href='https://testnet.arcscan.app/address/'+addr;
+        }
+      }
+    }, true);
+  }, 1000);
+});
+</script>
