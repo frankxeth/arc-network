@@ -379,6 +379,123 @@ nav{
   .markets-grid{grid-template-columns:1fr}
 }
 </style>
+
+<style id="wd-style">
+/* ── Connected wallet button + dropdown ── */
+#connectBtn.wc-connected {
+  background: transparent !important;
+  border: 1px solid #253350 !important;
+  color: #e8edf5 !important;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 8px !important;
+  border-radius: 10px; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+#connectBtn.wc-connected:hover {
+  border-color: #00d4ff !important;
+  background: rgba(0,212,255,.05) !important;
+}
+.wc-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  background: #1a2235; border: 1px solid #253350;
+  display: flex; align-items: center; justify-content: center;
+}
+.wc-avatar img { width: 24px; height: 24px; object-fit: contain; border-radius: 50%; }
+.wc-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #00e676; flex-shrink: 0;
+  animation: wc-blink 2s infinite;
+}
+@keyframes wc-blink{0%,100%{opacity:1}50%{opacity:.3}}
+.wc-chevron { color: #5a7090; font-size: 10px; margin-left: 2px; }
+
+/* Dropdown panel */
+#wcDropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: #131929;
+  border: 1px solid #253350;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.6);
+  z-index: 9998;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+#wcDropdown.open { display: block; }
+
+.wcd-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #1e2d45;
+  display: flex; align-items: center; gap: 10px;
+}
+.wcd-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  background: #1a2235; border: 1px solid #253350;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.wcd-avatar img { width: 36px; height: 36px; object-fit: contain; }
+.wcd-wallet-name { font-size: 11px; color: #5a7090; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .05em; }
+.wcd-addr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 600; color: #e8edf5;
+}
+
+.wcd-body { padding: 6px; }
+
+.wcd-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px;
+  cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: #8aa0be;
+  transition: background .12s, color .12s;
+}
+.wcd-item:hover { background: rgba(255,255,255,.05); color: #e8edf5; }
+.wcd-item-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.wcd-item.danger { color: #ff7070; }
+.wcd-item.danger:hover { background: rgba(255,82,82,.08); color: #ff5252; }
+.wcd-sep { height: 1px; background: #1e2d45; margin: 4px 6px; }
+
+.wcd-bal {
+  padding: 10px 16px 12px;
+  border-top: 1px solid #1e2d45;
+}
+.wcd-bal-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.wcd-bal-label { font-size: 11px; color: #5a7090; }
+.wcd-bal-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #e8edf5; }
+
+/* Explorer link */
+.wcd-explorer {
+  display: flex; align-items: center; justify-content: center;
+  gap: 5px; padding: 8px; font-size: 11px;
+  color: #00d4ff; text-decoration: none;
+  border-top: 1px solid #1e2d45;
+  transition: background .12s;
+}
+.wcd-explorer:hover { background: rgba(0,212,255,.05); }
+
+/* Copy toast */
+.wc-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #00e676; color: #000; font-weight: 700;
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  padding: 8px 20px; border-radius: 100px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s; z-index: 99999;
+}
+.wc-toast.show { opacity: 1; }
+</style>
+
 </head>
 <body>
 
@@ -1353,6 +1470,224 @@ setTimeout(()=>{
     </div>
   </div>
 </footer>
+
+<!-- ══ Connected wallet dropdown ══ -->
+<div id="wcDropdown">
+  <div class="wcd-header">
+    <div class="wcd-avatar" id="wcd-avatar"><span id="wcd-avatar-fb">🦊</span><img id="wcd-avatar-img" src="" style="display:none"></div>
+    <div>
+      <div class="wcd-wallet-name" id="wcd-wallet-name">MetaMask</div>
+      <div class="wcd-addr" id="wcd-addr-full">0x0000...0000</div>
+    </div>
+  </div>
+
+  <div class="wcd-body">
+    <button class="wcd-item" onclick="wcdCopyAddress()">
+      <span class="wcd-item-icon">📋</span> Copy Address
+    </button>
+    <button class="wcd-item" onclick="wcdOpenExplorer()">
+      <span class="wcd-item-icon">🔍</span> Lihat di Explorer
+    </button>
+    <div class="wcd-sep"></div>
+    <button class="wcd-item" onclick="wcdChangeWallet()">
+      <span class="wcd-item-icon">🔄</span> Ganti Wallet
+    </button>
+    <div class="wcd-sep"></div>
+    <button class="wcd-item danger" onclick="wcdDisconnect()">
+      <span class="wcd-item-icon">⏻</span> Disconnect
+    </button>
+  </div>
+
+  <div class="wcd-bal" id="wcd-bal">
+    <div class="wcd-bal-row">
+      <span class="wcd-bal-label">MTK</span>
+      <span class="wcd-bal-val" id="wcd-mtk">—</span>
+    </div>
+    <div class="wcd-bal-row">
+      <span class="wcd-bal-label">USDC (gas)</span>
+      <span class="wcd-bal-val" id="wcd-usdc">—</span>
+    </div>
+  </div>
+
+  <a class="wcd-explorer" id="wcd-explorer-link" href="#" target="_blank">
+    ↗ Buka di ArcScan
+  </a>
+</div>
+
+<div class="wc-toast" id="wc-toast">✓ Address disalin!</div>
+
+<script id="wd-script">
+(function(){
+  const EXPLORER = 'https://testnet.arcscan.app';
+  const MTK_ADDR = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
+  const ERC20_ABI = ['function balanceOf(address) view returns (uint256)'];
+
+  let _wcAccount = null;
+  let _wcProvider = null;
+  let _wcWalletDef = null;
+
+  // ── Patch: update connectBtn setelah wallet konek ──
+  const _origOnConnect = window._onWalletConnected;
+
+  window._onWalletConnected = function(address, walletDef, provider) {
+    _wcAccount  = address;
+    _wcProvider = provider;
+    _wcWalletDef = walletDef;
+    _updateConnectBtn(address, walletDef);
+    _loadDropdownBalances(address, provider);
+    if(typeof _origOnConnect === 'function') _origOnConnect(address, walletDef, provider);
+  };
+
+  // Poll setiap 500ms sampai account tersedia (kompatibel dengan connectWallet yang sudah ada)
+  function _pollForAccount(){
+    const interval = setInterval(()=>{
+      // Cek berbagai variable yang mungkin dipakai index.html
+      const addr = window.userAccount || window.currentAccount || window.connectedAddress;
+      if(addr && addr.length === 42){
+        _wcAccount = addr;
+        clearInterval(interval);
+        _updateConnectBtn(addr, _findActiveWallet());
+        _loadDropdownBalances(addr, null);
+      }
+    }, 400);
+    // Stop polling setelah 30 detik
+    setTimeout(()=>clearInterval(interval), 30000);
+  }
+
+  function _findActiveWallet(){
+    const saved = localStorage.getItem('arc_wallet') || localStorage.getItem('connectedWallet');
+    if(!saved || !window._WALLETS) return null;
+    return window._WALLETS.find(w=>w.id===saved) || null;
+  }
+
+  function _updateConnectBtn(address, walletDef){
+    const btn = document.getElementById('connectBtn');
+    if(!btn) return;
+    btn.classList.add('wc-connected');
+    const short = address.slice(0,6)+'...'+address.slice(-4);
+    const img   = walletDef?.img || '';
+    const fb    = walletDef?.fb  || '👛';
+    btn.innerHTML = `
+      <div class="wc-avatar">
+        <img src="${img}" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+        <span style="display:none;font-size:12px">${fb}</span>
+      </div>
+      <div class="wc-dot"></div>
+      <span>${short}</span>
+      <span class="wc-chevron">▾</span>
+      <div id="wcDropdown" class="wcd-outer"></div>
+    `;
+    // Re-wire click → dropdown
+    btn.onclick = (e)=>{ e.stopPropagation(); _toggleDropdown(address, walletDef); };
+
+    // Update dropdown header
+    const dAvFb  = document.getElementById('wcd-avatar-fb');
+    const dAvImg = document.getElementById('wcd-avatar-img');
+    if(dAvFb)  dAvFb.textContent = fb;
+    if(dAvImg){ dAvImg.src=img; dAvImg.style.display=img?'block':'none'; if(img) dAvFb.style.display='none'; }
+    const wn = document.getElementById('wcd-wallet-name');
+    const wa = document.getElementById('wcd-addr-full');
+    if(wn) wn.textContent = walletDef?.name || 'Wallet';
+    if(wa) wa.textContent = short;
+    const exLink = document.getElementById('wcd-explorer-link');
+    if(exLink) exLink.href = EXPLORER+'/address/'+address;
+  }
+
+  function _toggleDropdown(address, walletDef){
+    const dd = document.getElementById('wcDropdown');
+    if(!dd) return;
+    if(dd.classList.contains('open')){
+      dd.classList.remove('open');
+    } else {
+      // Position relative to connectBtn
+      const btn = document.getElementById('connectBtn');
+      const rect = btn.getBoundingClientRect();
+      dd.style.position = 'fixed';
+      dd.style.top  = (rect.bottom + 8) + 'px';
+      dd.style.right = (window.innerWidth - rect.right) + 'px';
+      dd.classList.add('open');
+    }
+  }
+
+  // Close on outside click
+  document.addEventListener('click', function(e){
+    const dd  = document.getElementById('wcDropdown');
+    const btn = document.getElementById('connectBtn');
+    if(dd && !dd.contains(e.target) && btn && !btn.contains(e.target)){
+      dd.classList.remove('open');
+    }
+  });
+
+  async function _loadDropdownBalances(address, prov){
+    try{
+      const p = prov || (window.ethers && window._lastProvider);
+      if(!p || !window.ethers) return;
+      const ethProv = p.getSigner ? p : new ethers.BrowserProvider(p);
+      const [mtkRaw, usdcRaw] = await Promise.all([
+        new ethers.Contract(MTK_ADDR, ERC20_ABI, ethProv).balanceOf(address),
+        ethProv.getBalance ? ethProv.getBalance(address) : ethProv.provider?.getBalance(address)
+      ]);
+      const mtk  = parseFloat(ethers.formatUnits(mtkRaw,18)).toFixed(2);
+      const usdc = parseFloat(ethers.formatUnits(usdcRaw||0n,6)).toFixed(4);
+      const mEl = document.getElementById('wcd-mtk');
+      const uEl = document.getElementById('wcd-usdc');
+      if(mEl) mEl.textContent = mtk + ' MTK';
+      if(uEl) uEl.textContent = usdc + ' USDC';
+    }catch(e){ console.warn('wcd balance:', e); }
+  }
+
+  // ── Actions ──
+  window.wcdCopyAddress = function(){
+    const addr = window.userAccount || window.currentAccount || _wcAccount;
+    if(!addr) return;
+    navigator.clipboard.writeText(addr).then(()=>{
+      const t = document.getElementById('wc-toast');
+      if(t){ t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+    });
+    document.getElementById('wcDropdown')?.classList.remove('open');
+  };
+
+  window.wcdOpenExplorer = function(){
+    const addr = window.userAccount || window.currentAccount || _wcAccount;
+    if(addr) window.open(EXPLORER+'/address/'+addr,'_blank');
+    document.getElementById('wcDropdown')?.classList.remove('open');
+  };
+
+  window.wcdChangeWallet = function(){
+    document.getElementById('wcDropdown')?.classList.remove('open');
+    if(typeof openWalletModal === 'function') openWalletModal();
+  };
+
+  window.wcdDisconnect = function(){
+    document.getElementById('wcDropdown')?.classList.remove('open');
+    localStorage.removeItem('arc_wallet');
+    localStorage.removeItem('connectedWallet');
+    if(typeof disconnectWallet === 'function') disconnectWallet();
+    else location.reload();
+  };
+
+  // ── Auto-detect on load ──
+  window.addEventListener('load', function(){
+    setTimeout(()=>{
+      const saved = localStorage.getItem('arc_wallet')||localStorage.getItem('connectedWallet');
+      // Start polling for account
+      _pollForAccount();
+      // Also observe connectBtn text change as signal wallet connected
+      const btn = document.getElementById('connectBtn');
+      if(btn){
+        const obs = new MutationObserver(()=>{
+          const addr = window.userAccount||window.currentAccount;
+          if(addr && addr.length===42 && !btn.classList.contains('wc-connected')){
+            _updateConnectBtn(addr, _findActiveWallet());
+          }
+        });
+        obs.observe(btn, {childList:true, characterData:true, subtree:true});
+      }
+    }, 800);
+  });
+})();
+</script>
+
 </body>
 </html><script>
 function handleConnectBtn() {
