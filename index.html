@@ -1069,6 +1069,26 @@ async function connectWallet() {
         if (btn) btn.textContent = short;
         const addrEl = document.getElementById('wcd-addr');
         if (addrEl) addrEl.textContent = short;
+        // Update dropdown address & balance
+        const dropAddr = document.getElementById('dropAddress');
+        if (dropAddr) dropAddr.textContent = newAddr.slice(0,8)+'...'+newAddr.slice(-6);
+        const dropMtk = document.getElementById('dropMtk');
+        if (dropMtk) dropMtk.textContent = '... MTK';
+        // Re-fetch MTK balance for new account
+        (async function() {
+          try {
+            const provider2 = new ethers.BrowserProvider(window.ethereum);
+            const mtk2 = new ethers.Contract(MTK_ADDR, ERC20_ABI, provider2);
+            const b2 = await mtk2.balanceOf(newAddr);
+            const d2 = await mtk2.decimals();
+            const bal2 = parseFloat(ethers.formatUnits(b2,d2)).toFixed(2);
+            window.userMtk = bal2;
+            const dropMtk2 = document.getElementById('dropMtk');
+            if (dropMtk2) dropMtk2.textContent = bal2 + ' MTK';
+            const pbMtk2 = document.getElementById('pbMtk');
+            if (pbMtk2) pbMtk2.textContent = bal2 + ' MTK';
+          } catch(e) { console.log('balance fetch err', e); }
+        })();
       }
     });
 
