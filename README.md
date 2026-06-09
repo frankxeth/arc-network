@@ -1,7 +1,7 @@
 
 ---
 
-## 🎯 ARC-ID Predict Market
+## 🎯 ARC-ID Predict Market {STILL UPDATE}
 
 On-chain prediction market where users bet **MTK tokens** on real-world outcomes. Every transaction goes through Arc Testnet smart contracts — fully on-chain, transparent, verifiable.
 
