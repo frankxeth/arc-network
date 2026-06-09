@@ -1,1418 +1,1157 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARC-ID Predict Market</title>
+<title>ARC-ID · Predict Market</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-:root{
-  --bg:#08090d;
-  --bg2:#0e0f16;
-  --bg3:#13141e;
-  --bg4:#1a1b27;
-  --blue:#1d6ef7;
-  --blue-bright:#4d8fff;
-  --blue-dim:rgba(29,110,247,0.15);
-  --blue-glow:rgba(29,110,247,0.35);
-  --blue-border:rgba(29,110,247,0.3);
-  --white:#ffffff;
-  --text:#e8eaf2;
-  --text2:#9295a8;
-  --text3:#545670;
-  --border:rgba(255,255,255,0.06);
-  --border2:rgba(255,255,255,0.1);
-  --green:#00c896;
-  --green-dim:rgba(0,200,150,0.12);
-  --red:#ff4466;
-  --red-dim:rgba(255,68,102,0.12);
-  --yellow:#f5c542;
-  --mono:'DM Mono',monospace;
-  --sans:'Outfit',sans-serif;
+:root {
+  --arc-purple: #663A73;
+  --arc-purple-light: #8B52A0;
+  --arc-purple-dim: rgba(102,58,115,0.18);
+  --arc-blue: #143453;
+  --arc-blue-light: #1E4D7A;
+  --bg: #0A0C14;
+  --bg2: #0F1220;
+  --bg3: #141828;
+  --surface: #181D2E;
+  --surface2: #1E2438;
+  --border: rgba(102,58,115,0.2);
+  --border2: rgba(102,58,115,0.45);
+  --text: #EEE8F4;
+  --muted: #7A6E88;
+  --green: #3EFFA0;
+  --red: #FF4D6D;
+  --yellow: #FFD166;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Anybody',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  min-height:100vh;
 }
 
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+/* BG MESH */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(102,58,115,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(20,52,83,0.2) 0%, transparent 60%);
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(102,58,115,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(102,58,115,0.04) 1px, transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
 
-/* SCROLLBAR */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
-
-/* NOISE */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:9998}
-
-/* ─── NAV ─── */
+/* NAV */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:200;
-  height:60px;
+  height:58px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;
-  background:rgba(8,9,13,0.92);
-  backdrop-filter:blur(24px);
+  padding:0 2rem;
+  background:rgba(10,12,20,0.85);
+  backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
 }
-.nav-logo{
-  display:flex;align-items:center;gap:10px;
-  font-weight:800;font-size:17px;letter-spacing:-0.03em;color:var(--white);
-  text-decoration:none;
+.logo{
+  font-size:1.05rem;font-weight:800;
+  letter-spacing:-0.03em;
+  color:var(--text);
 }
-.nav-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px var(--blue-glow);animation:blink 2.5s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
-.nav-logo span{color:var(--blue)}
-
-.nav-center{display:flex;align-items:center;gap:4px}
+.logo span{color:var(--arc-purple-light);}
+.nav-mid{display:flex;gap:0.25rem;}
 .nav-link{
-  font-size:13px;font-weight:500;color:var(--text2);padding:6px 14px;border-radius:6px;
-  text-decoration:none;cursor:pointer;transition:all 0.15s;border:none;background:transparent;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;color:var(--muted);
+  text-decoration:none;padding:6px 12px;
+  border-radius:4px;transition:all 0.15s;
+  letter-spacing:0.03em;
 }
-.nav-link:hover,.nav-link.active{color:var(--white);background:var(--bg4)}
-.nav-link.active{color:var(--white)}
-
-.nav-right{display:flex;align-items:center;gap:10px}
-.vol-chip{
-  font-family:var(--mono);font-size:10px;letter-spacing:0.05em;color:var(--text3);
-  padding:4px 10px;border-radius:4px;border:1px solid var(--border);
+.nav-link:hover,.nav-link.active{color:var(--text);background:var(--surface);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.net-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.68rem;
+  padding:5px 10px;
+  border-radius:100px;
+  background:rgba(62,255,160,0.08);
+  color:var(--green);
+  border:1px solid rgba(62,255,160,0.2);
+  display:flex;align-items:center;gap:6px;
 }
-.vol-chip b{color:var(--text2)}
-
+.net-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 #connectBtn{
-  display:flex;align-items:center;gap:8px;
-  font-family:var(--sans);font-size:13px;font-weight:600;
-  padding:8px 18px;border-radius:8px;cursor:pointer;border:none;
-  background:var(--blue);color:var(--white);
-  transition:all 0.2s;box-shadow:0 0 20px rgba(29,110,247,0.3);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;
+  padding:8px 18px;
+  background:linear-gradient(135deg,var(--arc-purple),var(--arc-blue));
+  color:#fff;
+  border:none;border-radius:5px;
+  cursor:pointer;letter-spacing:0.05em;
+  transition:all 0.2s;
+  white-space:nowrap;
 }
-#connectBtn:hover{background:var(--blue-bright);box-shadow:0 0 28px rgba(29,110,247,0.5)}
-#connectBtn.connected{background:var(--bg4);border:1px solid var(--border2);box-shadow:none}
-#connectBtn.connected:hover{background:var(--bg3)}
-.btn-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(0,200,150,0.6)}
+#connectBtn:hover{opacity:0.85;transform:translateY(-1px);}
+#connectBtn.connected{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  color:var(--arc-purple-light);
+}
 
-/* ─── HERO ─── */
+/* WALLET DROPDOWN */
+#walletDropdown{
+  position:fixed;top:66px;right:2rem;
+  width:260px;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:1.2rem;
+  z-index:300;
+  display:none;
+  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+}
+#walletDropdown.open{display:block;}
+.wd-addr{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem;color:var(--arc-purple-light);
+  margin-bottom:1rem;
+  word-break:break-all;
+}
+.wd-bals{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;margin-bottom:1rem;
+}
+.wd-bal{
+  background:var(--surface);
+  border-radius:6px;padding:8px 10px;
+  border:1px solid var(--border);
+}
+.wd-bal-l{font-size:0.65rem;color:var(--muted);margin-bottom:3px;}
+.wd-bal-v{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.82rem;color:var(--text);font-weight:500;
+}
+.wd-actions{display:flex;flex-direction:column;gap:6px;}
+.wd-btn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;padding:9px 12px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);border-radius:5px;
+  cursor:pointer;text-align:left;
+  transition:all 0.15s;letter-spacing:0.03em;
+}
+.wd-btn:hover{background:var(--surface2);border-color:var(--border2);}
+.wd-btn.disconnect{color:var(--red);border-color:rgba(255,77,109,0.25);}
+.wd-btn.disconnect:hover{background:rgba(255,77,109,0.08);}
+
+/* WALLET MODAL */
+#walletModal{
+  position:fixed;inset:0;z-index:500;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);
+}
+#walletModal.open{display:flex;}
+.wm-box{
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  width:360px;max-width:95vw;
+  overflow:hidden;
+}
+.wm-header{
+  padding:1.4rem 1.5rem 1rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.wm-title{font-size:1rem;font-weight:600;}
+.wm-close{
+  background:none;border:none;color:var(--muted);
+  font-size:1.2rem;cursor:pointer;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:all 0.15s;
+}
+.wm-close:hover{background:var(--surface2);color:var(--text);}
+.wm-list{padding:0.8rem;}
+.wm-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:8px;
+  cursor:pointer;transition:all 0.15s;
+  border:1px solid transparent;
+  margin-bottom:4px;
+}
+.wm-item:hover{background:var(--surface2);border-color:var(--border);}
+.wm-icon{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;
+  background:var(--surface);
+}
+.wm-name{font-size:0.88rem;font-weight:600;}
+.wm-sub{font-size:0.72rem;color:var(--muted);margin-top:1px;}
+.wm-tag{
+  margin-left:auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;
+  padding:3px 8px;border-radius:100px;
+  background:rgba(62,255,160,0.1);color:var(--green);
+}
+.wm-footer{
+  padding:0.8rem 1.5rem 1.2rem;
+  font-size:0.75rem;color:var(--muted);text-align:center;
+  border-top:1px solid var(--border);
+}
+
+/* MAIN */
+main{position:relative;z-index:1;padding-top:58px;}
+
+/* HERO */
 .hero{
-  position:relative;padding:100px 28px 48px;
-  background:linear-gradient(180deg,rgba(29,110,247,0.04) 0%,transparent 100%);
+  max-width:1200px;margin:0 auto;
+  padding:5rem 2rem 3rem;
+  display:grid;grid-template-columns:1fr 420px;
+  gap:3rem;align-items:center;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;color:var(--arc-purple-light);
+  border:1px solid var(--border2);
+  padding:5px 12px;border-radius:100px;
+  margin-bottom:1.5rem;
+  background:var(--arc-purple-dim);
+  letter-spacing:0.1em;
+}
+h1{
+  font-size:clamp(2.6rem,6vw,4.8rem);
+  font-weight:800;line-height:1.0;
+  letter-spacing:-0.03em;
+  margin-bottom:1.2rem;
+}
+h1 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--arc-purple-light),#A78BFA);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{
+  font-size:0.95rem;color:var(--muted);
+  line-height:1.7;font-weight:300;
+  max-width:460px;margin-bottom:2rem;
+}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-primary{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.8rem;padding:12px 24px;
+  background:linear-gradient(135deg,var(--arc-purple),var(--arc-blue));
+  color:#fff;border:none;border-radius:6px;
+  cursor:pointer;letter-spacing:0.05em;
+  transition:all 0.2s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(102,58,115,0.4);}
+.btn-outline{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.8rem;padding:12px 20px;
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--border2);
+  border-radius:6px;cursor:pointer;
+  letter-spacing:0.05em;transition:all 0.2s;
+  text-decoration:none;display:inline-flex;align-items:center;
+}
+.btn-outline:hover{background:var(--surface);border-color:var(--arc-purple-light);}
+
+/* HERO CARD */
+.hero-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:12px;overflow:hidden;
+}
+.hc-top{
+  padding:1.2rem 1.5rem;
+  background:linear-gradient(135deg,rgba(102,58,115,0.15),rgba(20,52,83,0.15));
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hc-title{font-size:0.82rem;font-weight:600;color:var(--muted);}
+.hc-live{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;
+  display:flex;align-items:center;gap:5px;
+  color:var(--green);
+}
+.hc-stats{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border);
+}
+.hc-stat{
+  padding:1rem 1.2rem;
+  background:var(--surface);
+}
+.hc-stat-l{font-size:0.68rem;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono',monospace;}
+.hc-stat-v{font-size:1.5rem;font-weight:800;color:var(--text);}
+.hc-stat-v.purple{color:var(--arc-purple-light);}
+.hc-featured{padding:1.2rem 1.5rem;border-top:1px solid var(--border);}
+.hc-q{font-size:0.82rem;font-weight:600;margin-bottom:10px;line-height:1.4;}
+.hc-odds{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.hc-odd{
+  padding:8px 10px;border-radius:5px;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:500;
+}
+.hc-odd.yes{background:rgba(62,255,160,0.1);color:var(--green);border:1px solid rgba(62,255,160,0.2);}
+.hc-odd.no{background:rgba(255,77,109,0.1);color:var(--red);border:1px solid rgba(255,77,109,0.2);}
+
+/* STATS */
+.stats-row{
+  max-width:1200px;margin:0 auto;
+  padding:0 2rem 4rem;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;
+}
+.stat-item{
+  padding:1.4rem 1.5rem;background:var(--surface);
+}
+.stat-l{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:6px;}
+.stat-v{font-size:1.7rem;font-weight:800;color:var(--text);}
+.stat-v.purple{color:var(--arc-purple-light);}
+.stat-d{font-size:0.72rem;color:var(--muted);margin-top:4px;}
+
+/* MARKETS */
+.markets-section{
+  max-width:1200px;margin:0 auto;
+  padding:0 2rem 5rem;
+}
+.sec-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.5rem;
+}
+.sec-title{font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;}
+.filters{display:flex;gap:6px;}
+.filter-btn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;padding:6px 14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--muted);border-radius:100px;
+  cursor:pointer;transition:all 0.15s;
+}
+.filter-btn:hover,.filter-btn.active{
+  background:var(--arc-purple-dim);
+  border-color:var(--arc-purple);
+  color:var(--arc-purple-light);
+}
+.markets-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+}
+.market-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:all 0.2s;
+  cursor:pointer;
+}
+.market-card:hover{
+  border-color:var(--arc-purple);
+  transform:translateY(-3px);
+  box-shadow:0 12px 32px rgba(102,58,115,0.2);
+}
+.mc-top{
+  padding:1.2rem;
   border-bottom:1px solid var(--border);
 }
-.hero-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap}
-.hero-left{flex:1;min-width:280px}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
-  color:var(--blue-bright);
-  background:var(--blue-dim);border:1px solid var(--blue-border);
-  padding:5px 12px;border-radius:4px;margin-bottom:20px;
+.mc-cat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;color:var(--arc-purple-light);
+  letter-spacing:0.12em;margin-bottom:8px;
 }
-.hero-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--blue-bright);animation:blink 2s infinite}
-.hero-title{font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:14px}
-.hero-title em{font-style:normal;color:var(--blue-bright)}
-.hero-sub{font-size:15px;color:var(--text2);line-height:1.6;max-width:480px;margin-bottom:28px}
-.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
-.hero-stat-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--white);margin-bottom:2px}
-.hero-stat-label{font-size:12px;color:var(--text3)}
-
-.hero-featured{
-  flex:0 0 380px;
-  background:var(--bg3);border:1px solid var(--border2);border-radius:16px;
-  padding:24px;position:relative;overflow:hidden;
+.mc-q{font-size:0.88rem;font-weight:600;line-height:1.4;margin-bottom:12px;}
+.mc-odds{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.mc-odd{
+  padding:8px;border-radius:5px;text-align:center;
+  font-family:'JetBrains Mono',monospace;font-weight:600;
 }
-.hero-featured::before{content:'FEATURED';position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:var(--blue-bright);background:var(--blue-dim);padding:3px 8px;border-radius:3px}
-.hf-question{font-size:16px;font-weight:600;line-height:1.4;margin-bottom:20px;padding-right:80px}
-.hf-odds{display:flex;gap:10px;margin-bottom:16px}
-.odds-pill{
-  flex:1;text-align:center;padding:12px;border-radius:10px;cursor:pointer;
-  transition:all 0.2s;font-weight:700;font-size:15px;
-  border:1.5px solid transparent;
+.mc-odd-l{font-size:0.62rem;margin-bottom:2px;opacity:0.7;}
+.mc-odd-v{font-size:1rem;}
+.mc-odd.yes{background:rgba(62,255,160,0.08);border:1px solid rgba(62,255,160,0.2);color:var(--green);}
+.mc-odd.no{background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);color:var(--red);}
+.mc-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.mc-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--arc-purple-light));border-radius:2px;}
+.mc-bot{
+  padding:10px 12px;
+  display:flex;align-items:center;justify-content:space-between;
 }
-.odds-pill.yes{background:var(--green-dim);color:var(--green);border-color:rgba(0,200,150,0.25)}
-.odds-pill.yes:hover{background:rgba(0,200,150,0.22);transform:translateY(-1px)}
-.odds-pill.no{background:var(--red-dim);color:var(--red);border-color:rgba(255,68,102,0.25)}
-.odds-pill.no:hover{background:rgba(255,68,102,0.22);transform:translateY(-1px)}
-.odds-pill small{display:block;font-size:10px;font-weight:400;opacity:0.7;margin-top:2px;font-family:var(--mono)}
-.hf-bar{height:6px;border-radius:3px;background:var(--bg4);overflow:hidden;margin-bottom:10px}
-.hf-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--blue))}
-.hf-meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text3)}
-
-/* ─── MAIN ─── */
-.main{max-width:1200px;margin:0 auto;padding:32px 28px 80px}
-
-/* FILTERS */
-.filters{display:flex;align-items:center;gap:8px;margin-bottom:28px;flex-wrap:wrap}
-.filter-btn{
-  font-size:12px;font-weight:500;padding:6px 14px;border-radius:6px;cursor:pointer;
-  border:1px solid var(--border);background:transparent;color:var(--text2);
+.mc-vol{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);}
+.mc-exp{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);}
+.btn-bet{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;padding:7px 14px;
+  background:linear-gradient(135deg,var(--arc-purple),var(--arc-blue));
+  color:#fff;border:none;border-radius:4px;
+  cursor:pointer;letter-spacing:0.04em;
   transition:all 0.15s;
 }
-.filter-btn:hover{border-color:var(--border2);color:var(--text)}
-.filter-btn.active{background:var(--blue);border-color:var(--blue);color:var(--white)}
-.filter-spacer{flex:1}
-.sort-select{
-  font-family:var(--sans);font-size:12px;color:var(--text2);background:var(--bg3);
-  border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;outline:none;
-}
-.sort-select option{background:var(--bg3)}
+.btn-bet:hover{opacity:0.85;}
 
-/* MARKETS GRID */
-.markets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-
-/* MARKET CARD */
-.market-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
-  padding:20px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;
-}
-.market-card::after{
-  content:'';position:absolute;inset:0;border-radius:14px;
-  background:linear-gradient(135deg,rgba(29,110,247,0.04),transparent);
-  opacity:0;transition:opacity 0.2s;pointer-events:none;
-}
-.market-card:hover{border-color:var(--blue-border);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
-.market-card:hover::after{opacity:1}
-
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
-.card-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);background:var(--bg4);padding:3px 8px;border-radius:3px;white-space:nowrap}
-.card-question{font-size:15px;font-weight:600;line-height:1.4;flex:1}
-
-.card-odds-row{display:flex;gap:8px;margin-bottom:14px}
-.card-odds{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 8px;border-radius:8px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent}
-.card-odds.yes{background:var(--green-dim);border-color:rgba(0,200,150,0.2)}
-.card-odds.yes:hover{background:rgba(0,200,150,0.22);border-color:rgba(0,200,150,0.4)}
-.card-odds.no{background:var(--red-dim);border-color:rgba(255,68,102,0.2)}
-.card-odds.no:hover{background:rgba(255,68,102,0.22);border-color:rgba(255,68,102,0.4)}
-.card-odds-pct{font-size:17px;font-weight:700}
-.card-odds.yes .card-odds-pct{color:var(--green)}
-.card-odds.no .card-odds-pct{color:var(--red)}
-.card-odds-label{font-size:10px;font-weight:500;color:var(--text2);margin-bottom:4px}
-.card-odds-price{font-family:var(--mono);font-size:10px;color:var(--text3)}
-
-.card-bar{height:4px;border-radius:2px;background:var(--bg4);overflow:hidden;margin-bottom:12px}
-.card-bar-yes{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--green),rgba(0,200,150,0.5))}
-
-.card-footer{display:flex;align-items:center;justify-content:space-between}
-.card-vol{font-family:var(--mono);font-size:10px;color:var(--text3)}
-.card-vol b{color:var(--text2)}
-.card-expiry{font-family:var(--mono);font-size:10px;color:var(--text3)}
-
-/* BET INPUT inline */
-.bet-inline{
-  margin-top:12px;padding-top:12px;border-top:1px solid var(--border);
-  display:none;
-}
-.bet-inline.show{display:block}
-.bet-inline-row{display:flex;gap:8px;align-items:center}
-.bet-input{
-  flex:1;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;
-  color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 12px;outline:none;
-  transition:border-color 0.2s;
-}
-.bet-input:focus{border-color:var(--blue)}
-.bet-input::placeholder{color:var(--text3)}
-.bet-submit{
-  font-family:var(--sans);font-size:12px;font-weight:600;
-  padding:9px 16px;border-radius:8px;border:none;cursor:pointer;
-  transition:all 0.15s;white-space:nowrap;
-}
-.bet-submit.yes{background:var(--green);color:#000}
-.bet-submit.yes:hover{background:#00e0a8}
-.bet-submit.no{background:var(--red);color:#fff}
-.bet-submit.no:hover{background:#ff6680}
-.bet-submit:disabled{opacity:0.4;cursor:not-allowed}
-.bet-result{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;word-break:break-all}
-.bet-result.ok{color:var(--green)}
-.bet-result.err{color:var(--red)}
-.bet-result.wait{color:var(--yellow)}
-
-/* ─── WALLET MODAL ─── */
-.modal-overlay{
+/* BET MODAL */
+#betModal{
   position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity 0.2s;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(8px);
 }
-.modal-overlay.show{opacity:1;pointer-events:all}
-
-.wallet-modal{
-  background:var(--bg2);border:1px solid var(--border2);border-radius:20px;
-  width:100%;max-width:420px;padding:32px;
-  transform:translateY(16px);transition:transform 0.25s;
-  margin:16px;
+#betModal.open{display:flex;}
+.bm-box{
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  width:420px;max-width:95vw;
+  overflow:hidden;
 }
-.modal-overlay.show .wallet-modal{transform:translateY(0)}
-
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.modal-title{font-size:18px;font-weight:700}
-.modal-close{
-  width:32px;height:32px;border-radius:8px;border:none;background:var(--bg4);
-  color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
-  transition:all 0.15s;
+.bm-header{
+  padding:1.3rem 1.5rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
 }
-.modal-close:hover{background:var(--bg3);color:var(--white)}
-.modal-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
-
-.wallet-list{display:flex;flex-direction:column;gap:8px}
-.wallet-item{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 16px;border-radius:12px;border:1px solid var(--border);
-  cursor:pointer;transition:all 0.15s;background:var(--bg3);
+.bm-title{font-size:1rem;font-weight:700;}
+.bm-body{padding:1.4rem 1.5rem;}
+.bm-q{
+  font-size:0.85rem;color:var(--muted);
+  margin-bottom:1.4rem;line-height:1.5;
 }
-.wallet-item:hover{border-color:var(--blue-border);background:var(--bg4)}
-.wallet-item.detected{border-color:rgba(0,200,150,0.3)}
-.wallet-icon{
-  width:40px;height:40px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;flex-shrink:0;background:var(--bg4);
-  border:1px solid var(--border);overflow:hidden;
+.side-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.4rem;}
+.side-btn{
+  padding:12px;border-radius:7px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.85rem;font-weight:600;
+  cursor:pointer;border:2px solid transparent;
+  transition:all 0.15s;text-align:center;
 }
-.wallet-icon img{width:28px;height:28px;object-fit:contain}
-.wallet-name{font-size:15px;font-weight:600;flex:1}
-.wallet-status{font-family:var(--mono);font-size:10px;color:var(--text3)}
-.wallet-status.detected{color:var(--green)}
-.wallet-status.installing{color:var(--text3)}
-.wallet-connecting{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  padding:20px;font-size:14px;color:var(--text2);font-weight:500;
+.side-btn.yes{
+  background:rgba(62,255,160,0.08);
+  color:var(--green);border-color:rgba(62,255,160,0.2);
 }
-
-.modal-footer{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
-.modal-footer-text{font-size:12px;color:var(--text3);text-align:center;line-height:1.6}
-.modal-footer-text a{color:var(--blue-bright);text-decoration:none}
-.modal-footer-text a:hover{text-decoration:underline}
-
-/* ─── BET MODAL ─── */
-.bet-modal{
-  background:var(--bg2);border:1px solid var(--border2);border-radius:20px;
-  width:100%;max-width:460px;padding:32px;
-  transform:translateY(16px);transition:transform 0.25s;margin:16px;
+.side-btn.yes.active,.side-btn.yes:hover{
+  background:rgba(62,255,160,0.18);border-color:var(--green);
 }
-.modal-overlay.show .bet-modal{transform:translateY(0)}
-.bet-modal-question{font-size:16px;font-weight:600;line-height:1.4;margin-bottom:20px;color:var(--text)}
-.bet-tabs{display:flex;gap:8px;margin-bottom:20px}
-.bet-tab{
-  flex:1;padding:10px;border-radius:8px;border:1.5px solid transparent;
-  cursor:pointer;font-size:14px;font-weight:600;text-align:center;transition:all 0.15s;background:var(--bg4);
-  color:var(--text2);
+.side-btn.no{
+  background:rgba(255,77,109,0.08);
+  color:var(--red);border-color:rgba(255,77,109,0.2);
 }
-.bet-tab.yes.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
-.bet-tab.no.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
-.bet-tab:hover{color:var(--text)}
-
-.bet-amount-section{margin-bottom:20px}
-.bet-amount-label{font-size:12px;color:var(--text2);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.bet-amount-label span{font-family:var(--mono);color:var(--text3)}
-.bet-amount-input{
-  width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;
-  color:var(--white);font-family:var(--mono);font-size:22px;font-weight:500;
-  padding:16px;outline:none;transition:border-color 0.2s;
+.side-btn.no.active,.side-btn.no:hover{
+  background:rgba(255,77,109,0.18);border-color:var(--red);
 }
-.bet-amount-input:focus{border-color:var(--blue)}
-.bet-presets{display:flex;gap:8px;margin-top:10px}
-.bet-preset{
-  font-family:var(--mono);font-size:11px;padding:5px 12px;
-  border-radius:6px;border:1px solid var(--border);background:transparent;
-  color:var(--text2);cursor:pointer;transition:all 0.15s;
+.amt-label{
+  display:flex;justify-content:space-between;
+  font-size:0.78rem;color:var(--muted);
+  margin-bottom:8px;
 }
-.bet-preset:hover{border-color:var(--blue);color:var(--blue)}
-
-.bet-summary{background:var(--bg4);border-radius:10px;padding:14px;margin-bottom:20px}
-.bet-summary-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
-.bet-summary-row:last-child{margin:0;padding-top:8px;border-top:1px solid var(--border);font-weight:600}
-.bet-summary-row .label{color:var(--text2)}
-.bet-summary-row .val{font-family:var(--mono);color:var(--text)}
-
-.confirm-btn{
-  width:100%;padding:14px;border-radius:10px;border:none;cursor:pointer;
-  font-family:var(--sans);font-size:15px;font-weight:700;transition:all 0.2s;
+.amt-label span{color:var(--arc-purple-light);}
+.amt-input{
+  width:100%;
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.3rem;font-weight:600;
+  color:var(--text);
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:12px 14px;
+  outline:none;
+  margin-bottom:10px;
+  transition:border-color 0.15s;
 }
-.confirm-btn.yes{background:var(--green);color:#000;box-shadow:0 4px 20px rgba(0,200,150,0.3)}
-.confirm-btn.yes:hover{background:#00e0a8;box-shadow:0 4px 28px rgba(0,200,150,0.45)}
-.confirm-btn.no{background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(255,68,102,0.3)}
-.confirm-btn.no:hover{background:#ff6680;box-shadow:0 4px 28px rgba(255,68,102,0.45)}
-.confirm-btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
-.tx-status{font-family:var(--mono);font-size:11px;margin-top:12px;text-align:center;line-height:1.7;word-break:break-all}
-.tx-status.ok{color:var(--green)}
-.tx-status.wait{color:var(--yellow)}
-.tx-status.err{color:var(--red)}
-
-/* ─── TOAST ─── */
-.toast{
-  position:fixed;bottom:28px;right:28px;z-index:9000;
-  background:var(--bg3);border:1px solid var(--border2);border-radius:10px;
-  padding:14px 18px;min-width:280px;max-width:360px;
-  font-size:13px;line-height:1.5;
-  transform:translateY(12px);opacity:0;pointer-events:none;transition:all 0.3s;
+.amt-input:focus{border-color:var(--arc-purple);}
+.quick-btns{display:flex;gap:6px;margin-bottom:1.4rem;}
+.quick-btn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;padding:6px 12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--muted);border-radius:4px;
+  cursor:pointer;transition:all 0.15s;
 }
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{border-color:rgba(0,200,150,0.4);color:var(--green)}
-.toast.err{border-color:rgba(255,68,102,0.4);color:var(--red)}
-.toast.wait{border-color:rgba(245,197,66,0.4);color:var(--yellow)}
-.toast-title{font-weight:600;margin-bottom:2px}
-.toast-body{color:var(--text2);font-family:var(--mono);font-size:11px;word-break:break-all}
-
-/* ─── SPINNER ─── */
-.spin{display:inline-block;width:14px;height:14px;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px}
+.quick-btn:hover{border-color:var(--arc-purple);color:var(--arc-purple-light);}
+.bm-summary{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:1rem;
+  margin-bottom:1.2rem;
+}
+.bm-row{
+  display:flex;justify-content:space-between;
+  font-size:0.78rem;padding:4px 0;
+}
+.bm-row-l{color:var(--muted);}
+.bm-row-v{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:500;color:var(--text);
+}
+.bm-row-v.green{color:var(--green);}
+.btn-confirm{
+  width:100%;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.85rem;font-weight:600;
+  padding:14px;
+  background:linear-gradient(135deg,var(--arc-purple),var(--arc-blue));
+  color:#fff;border:none;border-radius:7px;
+  cursor:pointer;letter-spacing:0.05em;
+  transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-confirm:hover{opacity:0.85;}
+.btn-confirm:disabled{opacity:0.5;cursor:not-allowed;}
+#betStatus{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;color:var(--muted);
+  margin-top:10px;text-align:center;min-height:18px;
+}
+.spin{
+  display:inline-block;
+  width:14px;height:14px;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ─── PORTFOLIO BAR ─── */
-.portfolio-bar{
-  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
-  padding:18px 24px;margin-bottom:28px;
-  display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+/* TOAST */
+#toast{
+  position:fixed;bottom:2rem;right:2rem;z-index:999;
+  font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+  padding:12px 18px;
+  background:var(--bg3);
+  border-radius:6px;
+  max-width:300px;
+  transform:translateY(80px);opacity:0;
+  transition:all 0.3s cubic-bezier(.34,1.56,.64,1);
+  border-left:3px solid var(--arc-purple);
 }
-.p-stat{flex:1;min-width:120px}
-.p-stat-label{font-size:11px;color:var(--text3);margin-bottom:3px;font-family:var(--mono);letter-spacing:0.05em;text-transform:uppercase}
-.p-stat-val{font-size:18px;font-weight:700;font-family:var(--mono)}
-.p-stat-val.up{color:var(--green)}
-.p-stat-val.neutral{color:var(--text)}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.ok{border-left-color:var(--green);}
+#toast.err{border-left-color:var(--red);}
 
-/* WALLET ADDRESS CHIP */
-.addr-chip{font-family:var(--mono);font-size:12px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text2)}
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:2rem;
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ft-l{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);}
+.ft-links{display:flex;gap:1.5rem;}
+.ft-links a{font-size:0.78rem;color:var(--muted);text-decoration:none;transition:color 0.15s;}
+.ft-links a:hover{color:var(--arc-purple-light);}
 
-@media(max-width:700px){
-  nav{padding:0 16px}
-  .nav-center{display:none}
-  .hero{padding:80px 16px 36px}
-  .main{padding:24px 16px 60px}
-  .hero-featured{flex:0 0 100%;order:3}
-  .markets-grid{grid-template-columns:1fr}
+/* FADE IN */
+.fade{opacity:0;transform:translateY(20px);transition:opacity 0.5s ease,transform 0.5s ease;}
+.fade.in{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;}
+  .hero-card{display:none;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .markets-grid{grid-template-columns:1fr;}
+  .nav-mid{display:none;}
 }
 </style>
-
-
-
-
-
-
 </head>
 <body>
 
+<div id="toast"></div>
+
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#">
-    <div class="nav-logo-dot"></div>
-    ARC-<span>ID</span>
-  </a>
-  <div class="nav-center">
-    <button class="nav-link active">Markets</button>
-    <button class="nav-link" onclick="showToast('Portfolio coming soon','','wait')">Portfolio</button>
-    <button class="nav-link" onclick="window.open('https://testnet.arcscan.app','_blank')">Explorer</button>
-    <button class="nav-link" onclick="window.open('https://github.com/frankxeth/arc-network','_blank')">GitHub</button>
-            <a href="faucet.html" class="nav-link" style="text-decoration:none">Faucet 🚰</a>
+  <div class="logo">ARC<span>-ID</span></div>
+  <div class="nav-mid">
+    <a href="#markets" class="nav-link active">Markets</a>
+    <a href="https://arc-network-jet.vercel.app/faucet.html" class="nav-link">Faucet</a>
+    <a href="https://github.com/frankxeth/arc-network" target="_blank" class="nav-link">GitHub</a>
   </div>
   <div class="nav-right">
-    <div style="display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;color:#545670;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);padding:4px 10px;border-radius:6px">
-      <div style="width:5px;height:5px;border-radius:50%;background:#00c896;box-shadow:0 0 6px rgba(0,200,150,0.6)"></div>
-      Testnet Live
-    </div>
-    
-    <button id="connectBtn" onclick="handleConnectBtn()">
-      <span id="connectBtnContent">Connect Wallet</span>
-    </button>
+    <div class="net-badge"><div class="net-dot"></div>Testnet Live</div>
+    <button id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
   </div>
 </nav>
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="toast-title" id="toastTitle"></div>
-  <div class="toast-body" id="toastBody"></div>
-</div>
-
 <!-- WALLET DROPDOWN -->
-<style>
-.wd{position:fixed;top:62px;right:24px;z-index:9999;background:#131929;border:1px solid #253350;border-radius:12px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;overflow:hidden}
-.wd.open{display:block}
-.wd-addr{padding:14px 16px 10px;border-bottom:1px solid #1e2d45}
-.wd-addr-label{font-size:10px;color:#5a7090;font-family:monospace;margin-bottom:2px}
-.wd-addr-val{font-size:13px;font-weight:600;color:#e8edf5;font-family:monospace}
-.wd-bal{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid #1e2d45}
-.wd-bal-item{flex:1;font-size:11px;color:#8aa0be}
-.wd-bal-item b{display:block;font-size:13px;color:#e8edf5;font-family:monospace}
-.wd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;color:#e8edf5;border:none;background:none;width:100%;text-align:left;transition:background .12s}
-.wd-item:hover{background:rgba(255,255,255,.05)}
-.wd-item.red{color:#ff4466}
-</style>
-<div id="walletDropdown" class="wd">
-  <div class="wd-addr">
-    <div class="wd-addr-label">Connected</div>
-    <div class="wd-addr-val" id="dropAddress">—</div>
+<div id="walletDropdown">
+  <div class="wd-addr" id="wdAddr">—</div>
+  <div class="wd-bals">
+    <div class="wd-bal">
+      <div class="wd-bal-l">MTK</div>
+      <div class="wd-bal-v" id="wdMtk">—</div>
+    </div>
+    <div class="wd-bal">
+      <div class="wd-bal-l">USDC (gas)</div>
+      <div class="wd-bal-v" id="wdUsdc">—</div>
+    </div>
   </div>
-  <div class="wd-bal">
-    <div class="wd-bal-item"><span>MTK</span><b id="dropMtk">—</b></div>
-    <div class="wd-bal-item"><span>USDC</span><b id="dropUsdc">—</b></div>
+  <div class="wd-actions">
+    <button class="wd-btn" onclick="copyAddress()">⎘ Copy address</button>
+    <button class="wd-btn" onclick="openWalletModal()">⇄ Change wallet</button>
+    <button class="wd-btn disconnect" onclick="disconnect()">✕ Disconnect</button>
   </div>
-  <button class="wd-item" onclick="copyWalletAddress()">Copy address</button>
-  <button class="wd-item" onclick="changeWallet()">Change wallet</button>
-  <button class="wd-item red" onclick="disconnectWallet()">Disconnect</button>
 </div>
 
+<!-- WALLET MODAL -->
+<div id="walletModal">
+  <div class="wm-box">
+    <div class="wm-header">
+      <div class="wm-title">Connect Wallet</div>
+      <button class="wm-close" onclick="closeWalletModal()">✕</button>
+    </div>
+    <div class="wm-list">
+      <div class="wm-item" onclick="connectWallet('metamask')">
+        <div class="wm-icon">🦊</div>
+        <div><div class="wm-name">MetaMask</div><div class="wm-sub">Browser extension</div></div>
+        <div class="wm-tag" id="mm-tag" style="display:none">Installed</div>
+      </div>
+      <div class="wm-item" onclick="connectWallet('rabby')">
+        <div class="wm-icon">🐰</div>
+        <div><div class="wm-name">Rabby Wallet</div><div class="wm-sub">Security-first wallet</div></div>
+        <div class="wm-tag" id="rabby-tag" style="display:none">Installed</div>
+      </div>
+      <div class="wm-item" onclick="connectWallet('okx')">
+        <div class="wm-icon">⬛</div>
+        <div><div class="wm-name">OKX Wallet</div><div class="wm-sub">Multi-chain wallet</div></div>
+        <div class="wm-tag" id="okx-tag" style="display:none">Installed</div>
+      </div>
+      <div class="wm-item" onclick="connectWallet('eip1193')">
+        <div class="wm-icon">🔗</div>
+        <div><div class="wm-name">Other Wallet</div><div class="wm-sub">Any EIP-1193 wallet</div></div>
+      </div>
+    </div>
+    <div class="wm-footer">Arc Testnet · Chain ID 5042002</div>
+  </div>
+</div>
 
 <!-- BET MODAL -->
-<div class="modal-overlay" id="betModal" onclick="closeBetModal(event)">
-  <div class="bet-modal" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title" id="betModalTitle">Place Bet</div>
-      <button class="modal-close" onclick="closeBetModal()">✕</button>
+<div id="betModal">
+  <div class="bm-box">
+    <div class="bm-header">
+      <div class="bm-title">Place Bet</div>
+      <button class="wm-close" onclick="closeBetModal()">✕</button>
     </div>
-    <p class="bet-modal-question" id="betModalQuestion"></p>
-    <div class="bet-tabs">
-      <div class="bet-tab yes active" id="betTabYes" onclick="selectBetSide('yes')">YES</div>
-      <div class="bet-tab no" id="betTabNo" onclick="selectBetSide('no')">NO</div>
-    </div>
-    <div class="bet-amount-section">
-      <div class="bet-amount-label">Amount (MTK) <span id="betBalance">Balance: —</span></div>
-      <input class="bet-amount-input" type="number" id="betAmountInput" placeholder="0" min="1" step="1" oninput="updateBetSummary()">
-      <div class="bet-presets">
-        <button class="bet-preset" onclick="setPreset(5)">5 MTK</button>
-        <button class="bet-preset" onclick="setPreset(10)">10 MTK</button>
-        <button class="bet-preset" onclick="setPreset(50)">50 MTK</button>
-        <button class="bet-preset" onclick="setPreset(100)">100 MTK</button>
+    <div class="bm-body">
+      <div class="bm-q" id="bmQuestion">—</div>
+      <div class="side-picker">
+        <div class="side-btn yes active" id="sideYes" onclick="selectSide('yes')">YES</div>
+        <div class="side-btn no" id="sideNo" onclick="selectSide('no')">NO</div>
       </div>
+      <div class="amt-label">
+        <span>Amount (MTK)</span>
+        <span>Balance: <span id="bmBalance">—</span></span>
+      </div>
+      <input type="number" class="amt-input" id="betAmountInput" value="10" min="1" oninput="updateSummary()">
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="setAmt(5)">5</button>
+        <button class="quick-btn" onclick="setAmt(10)">10</button>
+        <button class="quick-btn" onclick="setAmt(50)">50</button>
+        <button class="quick-btn" onclick="setAmt(100)">100</button>
+      </div>
+      <div class="bm-summary">
+        <div class="bm-row"><span class="bm-row-l">Position</span><span class="bm-row-v" id="bmSide">YES</span></div>
+        <div class="bm-row"><span class="bm-row-l">Current odds</span><span class="bm-row-v" id="bmOdds">—</span></div>
+        <div class="bm-row"><span class="bm-row-l">Est. payout</span><span class="bm-row-v green" id="bmPayout">—</span></div>
+        <div class="bm-row"><span class="bm-row-l">Total cost</span><span class="bm-row-v" id="bmTotal">—</span></div>
+      </div>
+      <button class="btn-confirm" id="confirmBetBtn" onclick="confirmBet()">Confirm Bet</button>
+      <div id="betStatus"></div>
     </div>
-    <div class="bet-summary">
-      <div class="bet-summary-row"><span class="label">Position</span><span class="val" id="bsSide">YES</span></div>
-      <div class="bet-summary-row"><span class="label">Current odds</span><span class="val" id="bsOdds">—</span></div>
-      <div class="bet-summary-row"><span class="label">Est. payout</span><span class="val" id="bsPayout">—</span></div>
-      <div class="bet-summary-row"><span class="label">Total cost</span><span class="val" id="bsTotal">— MTK</span></div>
-    </div>
-    <button class="confirm-btn yes" id="confirmBetBtn" onclick="confirmBet()">Confirm YES Bet</button>
-    <div class="tx-status" id="betTxStatus"></div>
   </div>
 </div>
 
+<main>
 <!-- HERO -->
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-left">
-      <div class="hero-badge">Arc Testnet · Predict Market</div>
-      <h1 class="hero-title">Predict the<br><em>future</em> on-chain.</h1>
-      <p class="hero-sub">Bet MTK tokens on real-world outcomes. Every transaction goes through Arc Testnet smart contracts — fully on-chain, transparent, verifiable.</p>
-      <div class="hero-stats">
-        <div>
-          <div class="hero-stat-val" id="statMarkets">8</div>
-          <div class="hero-stat-label">Active markets</div>
-        </div>
-        <div>
-          <div class="hero-stat-val" id="statVol">$24,810</div>
-          <div class="hero-stat-label">Total volume</div>
-        </div>
-        <div>
-          <div class="hero-stat-val" id="statBets">142</div>
-          <div class="hero-stat-label">Bets placed</div>
-        </div>
+<section>
+<div class="hero fade">
+  <div>
+    <div class="hero-tag">● ARC TESTNET · PREDICT MARKET</div>
+    <h1>Predict the<br><em>future</em><br>on-chain.</h1>
+    <p class="hero-sub">Bet MTK tokens on real-world outcomes. Every transaction goes through Arc Testnet smart contracts — fully on-chain, transparent, verifiable.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="document.getElementById('markets').scrollIntoView({behavior:'smooth'})">View Markets</button>
+      <a href="https://arc-network-jet.vercel.app/faucet.html" class="btn-outline">Get MTK Tokens →</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="hc-top">
+      <div class="hc-title">PROTOCOL STATS</div>
+      <div class="hc-live"><div class="net-dot"></div>LIVE</div>
+    </div>
+    <div class="hc-stats">
+      <div class="hc-stat">
+        <div class="hc-stat-l">TOTAL VOLUME</div>
+        <div class="hc-stat-v purple" id="heroVol">$24,810</div>
+      </div>
+      <div class="hc-stat">
+        <div class="hc-stat-l">OPEN MARKETS</div>
+        <div class="hc-stat-v">8</div>
+      </div>
+      <div class="hc-stat">
+        <div class="hc-stat-l">BETS PLACED</div>
+        <div class="hc-stat-v" id="heroBets">144</div>
+      </div>
+      <div class="hc-stat">
+        <div class="hc-stat-l">YOUR BALANCE</div>
+        <div class="hc-stat-v purple" id="heroBalance">—</div>
       </div>
     </div>
-    <div class="hero-featured" id="heroFeatured"></div>
+    <div class="hc-featured">
+      <div class="hc-q">Will Arc Network mainnet launch before Q4 2026?</div>
+      <div class="hc-odds">
+        <div class="hc-odd yes">YES · 68%</div>
+        <div class="hc-odd no">NO · 32%</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-row fade">
+  <div class="stat-item">
+    <div class="stat-l">TOTAL VOLUME</div>
+    <div class="stat-v purple">$24,810</div>
+    <div class="stat-d">↑ 12.3% this week</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-l">ACTIVE MARKETS</div>
+    <div class="stat-v">8</div>
+    <div class="stat-d">On Arc Testnet</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-l">BETS PLACED</div>
+    <div class="stat-v" id="statBets">144</div>
+    <div class="stat-d">All on-chain</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-l">MTK BALANCE</div>
+    <div class="stat-v purple" id="statBalance">—</div>
+    <div class="stat-d" id="statBalNote">Connect wallet</div>
   </div>
 </div>
 
-<!-- MAIN -->
-<div class="main">
-  <div class="portfolio-bar" id="portfolioBar" style="display:none">
-    <div class="p-stat">
-      <div class="p-stat-label">Address</div>
-      <div class="addr-chip" id="pbAddress">—</div>
-    </div>
-    <div class="p-stat">
-      <div class="p-stat-label">MTK Balance</div>
-      <div class="p-stat-val neutral" id="pbMtk">—</div>
-    </div>
-    <div class="p-stat">
-      <div class="p-stat-label">USDC Balance</div>
-      <div class="p-stat-val neutral" id="pbUsdc">—</div>
-    </div>
-    <div class="p-stat">
-      <div class="p-stat-label">Bets placed</div>
-      <div class="p-stat-val up" id="pbBets">0</div>
+<!-- MARKETS -->
+<section id="markets">
+<div class="markets-section fade">
+  <div class="sec-header">
+    <div class="sec-title">Live Markets</div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterMarkets('all',this)">All</button>
+      <button class="filter-btn" onclick="filterMarkets('crypto',this)">Crypto</button>
+      <button class="filter-btn" onclick="filterMarkets('arc',this)">Arc Network</button>
+      <button class="filter-btn" onclick="filterMarkets('tech',this)">Tech</button>
     </div>
   </div>
-
-  <div class="filters">
-    <button class="filter-btn active" onclick="filterMarkets('all',this)">All</button>
-    <button class="filter-btn" onclick="filterMarkets('crypto',this)">Crypto</button>
-    <button class="filter-btn" onclick="filterMarkets('arc',this)">Arc Network</button>
-    <button class="filter-btn" onclick="filterMarkets('tech',this)">Tech</button>
-    <button class="filter-btn" onclick="filterMarkets('defi',this)">DeFi</button>
-    <div class="filter-spacer"></div>
-    <select class="sort-select" onchange="sortMarkets(this.value)">
-      <option value="vol">Sort: Volume</option>
-      <option value="new">Sort: Newest</option>
-      <option value="close">Sort: Closing soon</option>
-    </select>
-  </div>
-
   <div class="markets-grid" id="marketsGrid"></div>
 </div>
+</section>
+</main>
+
+<footer>
+  <div class="ft-l">ARC-ID © 2025 · frankxeth · arc-network-jet.vercel.app</div>
+  <div class="ft-links">
+    <a href="https://github.com/frankxeth/arc-network" target="_blank">GitHub</a>
+    <a href="https://twitter.com/l1luna_" target="_blank">@l1luna_</a>
+    <a href="https://arc-network-jet.vercel.app/faucet.html">Faucet</a>
+  </div>
+</footer>
 
 <script>
-// ──────────────────────────────────────────────
-//  CONFIG
-// ──────────────────────────────────────────────
-const ARC_CHAIN_ID     = 5042002;
-const ARC_CHAIN_HEX    = '0x4CE562';
-const ARC_RPC          = 'https://rpc.testnet.arc.network';
-const ARC_EXPLORER     = 'https://testnet.arcscan.app';
+// ─── CONFIG ───────────────────────────────────────────────
+const ARC_CHAIN_ID = 5042002;
+const ARC_CHAIN_HEX = '0x4CFF12';
+const ARC_RPC = 'https://arc-testnet.drpc.org';
+const MTK_ADDR = '0x1b8a151e64bc07de0acf967a0cb17ee16c3c8e2d';
+const PREDICT_ADDR = '0xB47126B8CE24f4Dd1b73d4404b0f2f58407Deb3d'; // ganti jika beda
 
-// Deployed contracts from frankxeth/arc-network
-const HELLO_ADDR = '0xB471266db352b095D766F89dA3a6981d62407Deb';
-const MTK_ADDR   = '0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85';
-// Prediction pool addresses (YES → HelloArchitect, NO → owner)
-const POOL_YES   = '0xB471266db352b095D766F89dA3a6981d62407Deb';
-const POOL_NO    = '0xE1769629A3C94Cf8d5dE5FBabCAF8B18944d810C';
-
-const HELLO_ABI = [
-  'function greet() view returns (string)',
-  'function setGreeting(string _greeting)',
-];
-const ERC20_ABI = [
+const MTK_ABI = [
   'function balanceOf(address) view returns (uint256)',
-  'function transfer(address to, uint256 amount) returns (bool)',
   'function decimals() view returns (uint8)',
-  'function symbol() view returns (string)',
+  'function approve(address,uint256) returns (bool)',
+  'function allowance(address,address) view returns (uint256)'
+];
+const PREDICT_ABI = [
+  'function bet(uint256 marketId, bool isYes, uint256 amount) external',
+  'function markets(uint256) view returns (string question, uint256 yesPool, uint256 noPool, bool resolved, bool yesWon)',
+  'function yesBets(uint256,address) view returns (uint256)',
+  'function noBets(uint256,address) view returns (uint256)',
+  'function claim(uint256 marketId) external',
+  'function marketCount() view returns (uint256)'
 ];
 
-// ──────────────────────────────────────────────
-//  STATE
-// ──────────────────────────────────────────────
-let provider, signer, userAddress, userMtk = 0n, betCount = 0;
-let currentBetMarket = null, currentBetSide = 'yes';
-const localBets = {}; // marketId → {yes, no} extra volume
+// ─── STATE ────────────────────────────────────────────────
+let provider = null;
+let signer = null;
+let userAddress = null;
+let currentMarket = null;
+let currentSide = 'yes';
 
-// ──────────────────────────────────────────────
-//  MARKETS DATA
-// ──────────────────────────────────────────────
+// ─── MARKET DATA (off-chain metadata) ─────────────────────
 const MARKETS = [
-  {
-    id:'m1', tag:'Arc Network', category:'arc',
-    question:'Will Arc Network mainnet launch before Q4 2025?',
-    yes:68, vol:8420, exp:'Sep 30, 2026', featured:true,
-    detail:'Arc is currently in public testnet. Prediction is based on developer activity and official roadmap signals.'
-  },
-  {
-    id:'m2', tag:'Crypto', category:'crypto',
-    question:'Will Bitcoin hit $120,000 by end of 2025?',
-    yes:54, vol:15600, exp:'Dec 31, 2026', featured:false,
-    detail:'Based on historical cycles and current market structure.'
-  },
-  {
-    id:'m3', tag:'DeFi', category:'defi',
-    question:'Will total DeFi TVL exceed $300B in 2025?',
-    yes:42, vol:6200, exp:'Dec 31, 2026', featured:false,
-    detail:'Current TVL trajectory and macro conditions factor in.'
-  },
-  {
-    id:'m4', tag:'Arc Network', category:'arc',
-    question:'Will MTK token be listed on a DEX within 3 months?',
-    yes:71, vol:3800, exp:'Sep 1, 2026', featured:false,
-    detail:'MyToken (MTK) deployed via Circle Contracts SDK on Arc Testnet.'
-  },
-  {
-    id:'m5', tag:'Tech', category:'tech',
-    question:'Will a major AI lab announce GPT-5 class model by mid-2025?',
-    yes:83, vol:11200, exp:'Jun 30, 2026', featured:false,
-    detail:'Based on publicly known research pipelines and announcements.'
-  },
-  {
-    id:'m6', tag:'Crypto', category:'crypto',
-    question:'Will Ethereum hit $10,000 before 2026?',
-    yes:38, vol:9400, exp:'Dec 31, 2026', featured:false,
-    detail:'ETH/USD market prediction based on current price action.'
-  },
-  {
-    id:'m7', tag:'DeFi', category:'defi',
-    question:'Will Circle USDC stablecoin maintain $1 peg throughout 2025?',
-    yes:91, vol:5100, exp:'Dec 31, 2026', featured:false,
-    detail:'Circle is the issuer of USDC and the primary gas token on Arc Network.'
-  },
-  {
-    id:'m8', tag:'Arc Network', category:'arc',
-    question:'Will the ARC-ID predict market reach 500 bets this month?',
-    yes:62, vol:1840, exp:'Jul 31, 2026', featured:false,
-    detail:'Based on community engagement and wallet connect data.'
-  },
+  {id:0, cat:'arc', question:'Will Arc Network mainnet launch before Q4 2026?', yes:68, no:32, vol:'$8,420', exp:'Sep 30, 2026'},
+  {id:1, cat:'crypto', question:'Will Bitcoin hit $120,000 by end of 2025?', yes:54, no:46, vol:'$15,600', exp:'Dec 31, 2025'},
+  {id:2, cat:'defi', question:'Will total DeFi TVL exceed $300B in 2025?', yes:42, no:58, vol:'$6,200', exp:'Dec 31, 2025'},
+  {id:3, cat:'arc', question:'Will MTK token be listed on a DEX within 3 months?', yes:71, no:29, vol:'$3,800', exp:'Sep 1, 2026'},
+  {id:4, cat:'tech', question:'Will a major AI lab announce GPT-5 class model by mid-2025?', yes:83, no:17, vol:'$11,200', exp:'Jun 30, 2025'},
+  {id:5, cat:'crypto', question:'Will Ethereum hit $10,000 before 2026?', yes:38, no:62, vol:'$9,400', exp:'Dec 31, 2025'},
+  {id:6, cat:'arc', question:'Will Arc Testnet reach 10,000 transactions?', yes:79, no:21, vol:'$4,100', exp:'Aug 1, 2026'},
+  {id:7, cat:'crypto', question:'Will Solana flip Ethereum in daily DEX volume?', yes:33, no:67, vol:'$5,320', exp:'Aug 1, 2026'},
 ];
 
-// ──────────────────────────────────────────────
-//  TOAST
-// ──────────────────────────────────────────────
-let toastTimer;
-function showToast(title, body='', type='ok') {
+// ─── TOAST ────────────────────────────────────────────────
+function toast(msg, type='') {
   const el = document.getElementById('toast');
-  el.className = `toast show ${type}`;
-  document.getElementById('toastTitle').textContent = title;
-  document.getElementById('toastBody').textContent = body;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' '+type : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 3500);
 }
 
-// ──────────────────────────────────────────────
-//  WALLET DEFINITIONS
-// ──────────────────────────────────────────────
-const WALLETS = [
-  {
-    id:'metamask', name:'MetaMask', icon:'🦊',
-    detect: () => !!(window.ethereum?.isMetaMask && !window.ethereum?.isOkxWallet),
-    getProvider: () => window.ethereum,
-    installUrl:'https://metamask.io/download'
-  },
-  {
-    id:'okx', name:'OKX Wallet', icon:'⬛',
-    detect: () => !!(window.okxwallet || window.ethereum?.isOkxWallet),
-    getProvider: () => window.okxwallet || window.ethereum,
-    installUrl:'https://www.okx.com/web3'
-  },
-  {
-    id:'rabby', name:'Rabby Wallet', icon:'🐇',
-    detect: () => !!(window.rabby || window.ethereum?.isRabby),
-    getProvider: () => window.rabby || window.ethereum,
-    installUrl:'https://rabby.io'
-  },
-  {
-    id:'phantom', name:'Phantom', icon:'👻',
-    detect: () => !!(window.phantom?.ethereum || window.solana?.isPhantom),
-    getProvider: () => window.phantom?.ethereum || window.ethereum,
-    installUrl:'https://phantom.app'
-  },
-  {
-    id:'subwallet', name:'SubWallet', icon:'🌐',
-    detect: () => !!(window.SubWallet || window.subwallet),
-    getProvider: () => window.SubWallet || window.subwallet || window.ethereum,
-    installUrl:'https://www.subwallet.app'
-  },
-  {
-    id:'bitget', name:'Bitget Wallet', icon:'💎',
-    detect: () => !!(window.bitkeep || window.bitget || window.ethereum?.isBitKeep),
-    getProvider: () => window.bitkeep?.ethereum || window.bitget || window.ethereum,
-    installUrl:'https://web3.bitget.com'
-  },
-  {
-    id:'walletconnect', name:'WalletConnect', icon:'🔗',
-    detect: () => false,
-    getProvider: () => window.ethereum,
-    installUrl:'https://walletconnect.com'
-  },
-];
-
-// ──────────────────────────────────────────────
-//  WALLET MODAL
-// ──────────────────────────────────────────────
-
-
-function renderWalletList() {
-  const list = document.getElementById('walletList');
-  list.innerHTML = WALLETS.map(w => {
-    const detected = w.detect();
-    return `
-    <div class="wallet-item ${detected?'detected':''}" onclick="connectWith('${w.id}')">
-      <div class="wallet-icon">${w.icon}</div>
-      <div class="wallet-name">${w.name}</div>
-      <div class="wallet-status ${detected?'detected':''}">${detected?'Detected':'Not installed'}</div>
-    </div>`;
-  }).join('');
+// ─── WALLET ───────────────────────────────────────────────
+function getEthereum(type) {
+  if (type === 'okx' && window.okxwallet) return window.okxwallet;
+  if (type === 'rabby' && window.rabby) return window.rabby;
+  return window.ethereum;
 }
 
-async function connectWith(walletId) {
-  const w = WALLETS.find(x => x.id === walletId);
-  if (!w) return;
+function openWalletModal() {
+  // detect installed
+  if (window.ethereum?.isMetaMask) document.getElementById('mm-tag').style.display='';
+  if (window.rabby) document.getElementById('rabby-tag').style.display='';
+  if (window.okxwallet) document.getElementById('okx-tag').style.display='';
+  document.getElementById('walletDropdown').classList.remove('open');
+  document.getElementById('walletModal').classList.add('open');
+}
+function closeWalletModal() {
+  document.getElementById('walletModal').classList.remove('open');
+}
 
-  const list = document.getElementById('walletList');
-  list.innerHTML = `<div class="wallet-connecting"><span class="spin"></span>Connecting to ${w.name}...</div>`;
-
+async function connectWallet(type) {
+  const eth = getEthereum(type);
+  if (!eth) {
+    toast('Wallet not detected. Please install it.', 'err');
+    return;
+  }
   try {
-    let rawProvider;
-    if (!w.detect()) {
-      // Redirect to install
-      closeWalletModal();
-      showToast(`${w.name} not detected`, `Opening install page...`, 'wait');
-      setTimeout(() => window.open(w.installUrl, '_blank'), 1000);
-      renderWalletList();
-      return;
-    }
-    rawProvider = w.getProvider();
-    if (!rawProvider) throw new Error('Provider not found');
+    closeWalletModal();
+    toast('Connecting...');
+    const accounts = await eth.request({ method: 'eth_requestAccounts' });
+    if (!accounts || !accounts.length) throw new Error('No accounts');
 
-    provider = new ethers.BrowserProvider(rawProvider);
-    await provider.send('eth_requestAccounts', []);
+    provider = new ethers.BrowserProvider(eth);
     signer = await provider.getSigner();
     userAddress = await signer.getAddress();
 
-    // Try to switch/add Arc Testnet
+    // Switch/add Arc network
+    await ensureArcNetwork(eth);
+
+    setConnectedUI(userAddress);
+    await fetchBalances();
+    setupListeners(eth);
+    toast('Connected: ' + short(userAddress), 'ok');
+  } catch(e) {
+    toast(e.message?.slice(0,60) || 'Connection failed', 'err');
+    provider = null; signer = null; userAddress = null;
+  }
+}
+
+async function ensureArcNetwork(eth) {
+  try {
+    const cid = await eth.request({ method: 'eth_chainId' });
+    if (parseInt(cid, 16) === ARC_CHAIN_ID) return;
     try {
-      await rawProvider.request({ method:'wallet_switchEthereumChain', params:[{chainId:ARC_CHAIN_HEX}] });
-    } catch(se) {
-      if (se.code === 4902) {
-        await rawProvider.request({
-          method:'wallet_addEthereumChain',
-          params:[{
-            chainId: ARC_CHAIN_HEX,
-            chainName: 'Arc Testnet',
-            nativeCurrency:{ name:'USD Coin', symbol:'USDC', decimals:18 },
-            rpcUrls:[ARC_RPC],
-            blockExplorerUrls:[ARC_EXPLORER]
-          }]
-        });
+      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: ARC_CHAIN_HEX }] });
+    } catch(sw) {
+      if (sw.code === 4902) {
+        await eth.request({ method: 'wallet_addEthereumChain', params: [{
+          chainId: ARC_CHAIN_HEX,
+          chainName: 'Arc Testnet',
+          rpcUrls: [ARC_RPC],
+          nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
+          blockExplorerUrls: ['https://testnet.arcscan.app']
+        }]});
       }
     }
+  } catch(e) {}
+}
 
-    // Re-init with new network
-    provider = new ethers.BrowserProvider(rawProvider);
+function setupListeners(eth) {
+  eth.removeAllListeners?.('accountsChanged');
+  eth.removeAllListeners?.('chainChanged');
+  eth.on('accountsChanged', async (accounts) => {
+    if (!accounts.length) { disconnect(); return; }
+    userAddress = accounts[0];
+    provider = new ethers.BrowserProvider(eth);
     signer = await provider.getSigner();
-    userAddress = await signer.getAddress();
-
-    closeWalletModal();
-    await onConnected(w.name);
-
-    rawProvider.on?.('accountsChanged', async (accs) => {
-      if (!accs.length) { onDisconnect(); return; }
-      signer = await provider.getSigner();
-      userAddress = accs[0];
-      await refreshBalances();
-    });
-  } catch(e) {
-    renderWalletList();
-    showToast('Connection failed', e.message, 'err');
-  }
+    window.userAddress = userAddress;
+    setConnectedUI(userAddress);
+    await fetchBalances();
+    toast('Account changed: ' + short(userAddress));
+  });
+  eth.on('chainChanged', () => window.location.reload());
 }
 
-async function onConnected(walletName) {
-  showToast(`${walletName} connected`, `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`, 'ok');
-  document.getElementById('connectBtn').classList.add('connected');
-  document.getElementById('connectBtnContent').innerHTML =
-    `<span class="btn-dot"></span>${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-  document.getElementById('portfolioBar').style.display = 'flex';
-  document.getElementById('pbAddress').textContent = `${userAddress.slice(0,8)}...${userAddress.slice(-6)}`;
-  await refreshBalances();
+function setConnectedUI(addr) {
+  const btn = document.getElementById('connectBtn');
+  btn.textContent = short(addr);
+  btn.className = 'connected';
+  btn.onclick = toggleDropdown;
+  document.getElementById('wdAddr').textContent = addr;
+  window.userAddress = addr;
 }
-function onDisconnect() {
-  userAddress = null; signer = null; provider = null;
-    window.userAddress = null; window._wcRealAddr = null;
-    window._selectedProvider = null;
-    localStorage.removeItem('arc_address');
-    localStorage.removeItem('walletAddress');
-    localStorage.removeItem('connectedWallet');
-    localStorage.removeItem('arc_wallet');
-  document.getElementById('connectBtn').classList.remove('connected');
-  document.getElementById('connectBtnContent').textContent = 'Connect Wallet';
-  document.getElementById('portfolioBar').style.display = 'none';
+
+function toggleDropdown() {
+  document.getElementById('walletDropdown').classList.toggle('open');
 }
-async function refreshBalances() {
+
+function disconnect() {
+  provider = null; signer = null; userAddress = null;
+  window.userAddress = null; window._wcRealAddr = null;
+  ['arc_address','walletAddress','connectedWallet','arc_wallet'].forEach(k => localStorage.removeItem(k));
+  const btn = document.getElementById('connectBtn');
+  btn.textContent = 'Connect Wallet';
+  btn.className = '';
+  btn.onclick = openWalletModal;
+  document.getElementById('walletDropdown').classList.remove('open');
+  document.getElementById('wdAddr').textContent = '—';
+  document.getElementById('wdMtk').textContent = '—';
+  document.getElementById('wdUsdc').textContent = '—';
+  document.getElementById('heroBalance').textContent = '—';
+  document.getElementById('statBalance').textContent = '—';
+  document.getElementById('statBalNote').textContent = 'Connect wallet';
+  toast('Disconnected');
+}
+
+async function fetchBalances() {
   if (!userAddress || !provider) return;
   try {
-    const ethB = await provider.getBalance(userAddress);
-    document.getElementById('pbUsdc').textContent = parseFloat(ethers.formatEther(ethB)).toFixed(4) + ' USDC';
-
-    const mtk = new ethers.Contract(MTK_ADDR, ERC20_ABI, provider);
-    const b = await mtk.balanceOf(userAddress);
-    const d = await mtk.decimals();
-    userMtk = b;
-    const mtkStr = parseFloat(ethers.formatUnits(b, d)).toFixed(2) + ' MTK';
-    document.getElementById('pbMtk').textContent = mtkStr;
-    document.getElementById('betBalance').textContent = 'Balance: ' + mtkStr;
-  } catch(e) { console.warn('Balance:', e.message); }
+    const mtk = new ethers.Contract(MTK_ADDR, MTK_ABI, provider);
+    const [bal, dec] = await Promise.all([mtk.balanceOf(userAddress), mtk.decimals()]);
+    const formatted = parseFloat(ethers.formatUnits(bal, dec)).toFixed(2);
+    document.getElementById('wdMtk').textContent = formatted;
+    document.getElementById('heroBalance').textContent = formatted + ' MTK';
+    document.getElementById('statBalance').textContent = formatted;
+    document.getElementById('statBalNote').textContent = 'MTK tokens';
+    // native balance
+    const native = await provider.getBalance(userAddress);
+    document.getElementById('wdUsdc').textContent = parseFloat(ethers.formatEther(native)).toFixed(4);
+    return parseFloat(formatted);
+  } catch(e) { return null; }
 }
 
-// ──────────────────────────────────────────────
-//  BET MODAL
-// ──────────────────────────────────────────────
-function openBetModal(marketId, side) {
-  // continue without modal
-  const m = MARKETS.find(x => x.id === marketId);
-  if (!m) return;
-  currentBetMarket = m;
-  currentBetSide = side;
-
-  document.getElementById('betModalQuestion').textContent = m.question;
-  document.getElementById('betAmountInput').value = '';
-  document.getElementById('betTxStatus').textContent = '';
-  document.getElementById('betTxStatus').className = 'tx-status';
-  selectBetSide(side);
-  refreshBalances();
-  document.getElementById('betModal').classList.add('show');
-}
-function closeBetModal(e) {
-  if (!e || e.target === document.getElementById('betModal')) {
-    document.getElementById('betModal').classList.remove('show');
-    currentBetMarket = null;
-  }
-}
-function selectBetSide(side) {
-  currentBetSide = side;
-  document.getElementById('betTabYes').classList.toggle('active', side==='yes');
-  document.getElementById('betTabNo').classList.toggle('active', side==='no');
-  const btn = document.getElementById('confirmBetBtn');
-  btn.className = `confirm-btn ${side}`;
-  btn.textContent = `Confirm ${side.toUpperCase()} Bet`;
-  updateBetSummary();
-}
-function setPreset(n) {
-  document.getElementById('betAmountInput').value = n;
-  updateBetSummary();
-}
-function updateBetSummary() {
-  if (!currentBetMarket) return;
-  const amt = parseFloat(document.getElementById('betAmountInput').value) || 0;
-  const odds = currentBetSide === 'yes' ? currentBetMarket.yes / 100 : (100 - currentBetMarket.yes) / 100;
-  const payout = odds > 0 ? (amt / odds).toFixed(2) : '—';
-  document.getElementById('bsSide').textContent = currentBetSide.toUpperCase();
-  document.getElementById('bsOdds').textContent = currentBetSide === 'yes'
-    ? `${currentBetMarket.yes}%` : `${100 - currentBetMarket.yes}%`;
-  document.getElementById('bsPayout').textContent = amt > 0 ? `~${payout} MTK` : '—';
-  document.getElementById('bsTotal').textContent = amt > 0 ? `${amt} MTK` : '— MTK';
+function copyAddress() {
+  if (!userAddress) return;
+  navigator.clipboard.writeText(userAddress).then(() => toast('Address copied!', 'ok'));
+  document.getElementById('walletDropdown').classList.remove('open');
 }
 
-async function confirmBet() {
-  if (!currentBetMarket) return;
-    // Recover signer jika wallet masih connected
-    if (!signer && window.ethereum) {
-      try {
-        const _rp = new ethers.BrowserProvider(window.ethereum);
-        signer = await _rp.getSigner();
-        if (!userAddress) userAddress = await signer.getAddress();
-        window.userAddress = userAddress;
-      } catch(e) { signer = null; }
-    }
-    if (!signer || !(userAddress || window.userAddress || window._wcRealAddr)) {
-      showToast('Please connect your wallet first', '', 'wait');
-      openWalletModal();
-      return;
-    }
-    if (!userAddress) userAddress = window.userAddress || window._wcRealAddr;
-  const amt = parseFloat(document.getElementById('betAmountInput').value);
-  if (!amt || amt <= 0) { showToast('Enter an amount', '', 'wait'); return; }
-
-  const btn = document.getElementById('confirmBetBtn');
-  const statusEl = document.getElementById('betTxStatus');
-  btn.disabled = true;
-  btn.innerHTML = `<span class="spin"></span>Sending...`;
-  statusEl.className = 'tx-status wait';
-  statusEl.textContent = 'Preparing transaction...';
-
-  try {
-    const mtk = new ethers.Contract(MTK_ADDR, ERC20_ABI, signer);
-    const decimals = await mtk.decimals();
-    const amtWei = ethers.parseUnits(amt.toString(), decimals);
-    const dest = currentBetSide === 'yes' ? POOL_YES : POOL_NO;
-
-    // Transfer MTK as bet
-    const tx = await mtk.transfer(dest, amtWei);
-    statusEl.textContent = `⏳ Tx sent: ${tx.hash.slice(0,14)}...\nWaiting for confirmation...`;
-
-    const receipt = await tx.wait();
-
-    // Also write bet label to HelloArchitect greeting
-    try {
-      const hello = new ethers.Contract(HELLO_ADDR, HELLO_ABI, signer);
-      const label = `BET:${currentBetMarket.id}:${currentBetSide.toUpperCase()}:${amt}MTK`;
-      await hello.setGreeting(label);
-    } catch(ge) { /* non-critical */ }
-
-    // Update local state
-    if (!localBets[currentBetMarket.id]) localBets[currentBetMarket.id] = {yes:0,no:0};
-    localBets[currentBetMarket.id][currentBetSide] += amt;
-    betCount++;
-    document.getElementById('pbBets').textContent = betCount;
-    document.getElementById('statBets').textContent = 142 + betCount;
-
-    statusEl.className = 'tx-status ok';
-    statusEl.innerHTML = `✓ Confirmed! Block #${receipt.blockNumber}\nTx: <a href="${ARC_EXPLORER}/tx/${tx.hash}" target="_blank" style="color:inherit">${tx.hash.slice(0,18)}... ↗</a>`;
-    showToast(`${currentBetSide.toUpperCase()} bet confirmed!`, `${amt} MTK on "${currentBetMarket.question.slice(0,40)}..."`, 'ok');
-    btn.innerHTML = '✓ Bet placed!';
-    setTimeout(() => { btn.disabled = false; btn.className = 'confirm-btn ' + currentBetSide; btn.textContent = 'Confirm ' + currentBetSide.toUpperCase() + ' Bet'; closeBetModal(); }, 2000);
-
-    // Update card odds
-    updateCardOdds(currentBetMarket.id);
-    await refreshBalances();
-  } catch(e) {
-    statusEl.className = 'tx-status err';
-    statusEl.textContent = 'Error: ' + (e.reason || e.message || 'Transaction failed');
-    showToast('Transaction failed', e.reason || e.message, 'err');
-    btn.disabled = false;
-    btn.className = `confirm-btn ${currentBetSide}`;
-    btn.textContent = `Confirm ${currentBetSide.toUpperCase()} Bet`;
-  }
+function short(addr) {
+  return addr.slice(0,6) + '...' + addr.slice(-4);
 }
 
-function updateCardOdds(marketId) {
-  const m = MARKETS.find(x => x.id === marketId);
-  if (!m) return;
-  const extra = localBets[marketId] || {yes:0,no:0};
-  const totalYes = (m.yes / 100 * m.vol) + extra.yes;
-  const totalNo  = ((100 - m.yes) / 100 * m.vol) + extra.no;
-  const total = totalYes + totalNo;
-  if (total === 0) return;
-  const newYes = Math.round((totalYes / total) * 100);
-  const yesEl = document.querySelector(`[data-market="${marketId}"] .yes-pct`);
-  const noEl  = document.querySelector(`[data-market="${marketId}"] .no-pct`);
-  const barEl = document.querySelector(`[data-market="${marketId}"] .card-bar-yes`);
-  if (yesEl) yesEl.textContent = newYes + '%';
-  if (noEl)  noEl.textContent  = (100 - newYes) + '%';
-  if (barEl) barEl.style.width = newYes + '%';
-}
-
-// ──────────────────────────────────────────────
-//  RENDER
-// ──────────────────────────────────────────────
-function renderMarkets(markets) {
+// ─── MARKETS ──────────────────────────────────────────────
+function renderMarkets(filter = 'all') {
   const grid = document.getElementById('marketsGrid');
-  grid.innerHTML = markets.map(m => `
-  <div class="market-card" data-market="${m.id}" data-cat="${m.category}">
-    <div class="card-header">
-      <div class="card-question">${m.question}</div>
-      <div class="card-tag">${m.tag}</div>
-    </div>
-    <div class="card-odds-row">
-      <div class="card-odds yes" onclick="event.stopPropagation();openBetModal('${m.id}','yes')">
-        <div class="card-odds-label">YES</div>
-        <div class="card-odds-pct yes-pct">${m.yes}%</div>
-        <div class="card-odds-price">${(m.yes/100).toFixed(2)}¢</div>
+  const filtered = filter === 'all' ? MARKETS : MARKETS.filter(m => m.cat === filter);
+  grid.innerHTML = filtered.map(m => `
+    <div class="market-card" data-cat="${m.cat}">
+      <div class="mc-top">
+        <div class="mc-cat">${m.cat.toUpperCase()}</div>
+        <div class="mc-q">${m.question}</div>
+        <div class="mc-odds">
+          <div class="mc-odd yes">
+            <div class="mc-odd-l">YES</div>
+            <div class="mc-odd-v">${m.yes}%</div>
+          </div>
+          <div class="mc-odd no">
+            <div class="mc-odd-l">NO</div>
+            <div class="mc-odd-v">${m.no}%</div>
+          </div>
+        </div>
+        <div class="mc-bar"><div class="mc-bar-fill" style="width:${m.yes}%"></div></div>
       </div>
-      <div class="card-odds no" onclick="event.stopPropagation();openBetModal('${m.id}','no')">
-        <div class="card-odds-label">NO</div>
-        <div class="card-odds-pct no-pct">${100 - m.yes}%</div>
-        <div class="card-odds-price">${((100-m.yes)/100).toFixed(2)}¢</div>
-      </div>
-    </div>
-    <div class="card-bar"><div class="card-bar-yes" style="width:${m.yes}%"></div></div>
-    <div class="card-footer">
-      <div class="card-vol">Vol <b>$${(m.vol).toLocaleString()}</b></div>
-      <div class="card-expiry">Exp ${m.exp}</div>
-    </div>
-  </div>`).join('');
-}
-
-function renderHeroFeatured() {
-  const m = MARKETS.find(x => x.featured);
-  if (!m) return;
-  const el = document.getElementById('heroFeatured');
-  el.innerHTML = `
-    <div class="hf-question">${m.question}</div>
-    <div class="hf-odds">
-      <div class="odds-pill yes" onclick="event.stopPropagation();openBetModal('${m.id}','yes')">
-        YES<small>${m.yes}%</small>
-      </div>
-      <div class="odds-pill no" onclick="event.stopPropagation();openBetModal('${m.id}','no')">
-        NO<small>${100 - m.yes}%</small>
+      <div class="mc-bot">
+        <span class="mc-vol">Vol ${m.vol}</span>
+        <button class="btn-bet" onclick="openBetModal(${m.id})">Bet →</button>
+        <span class="mc-exp">Exp ${m.exp}</span>
       </div>
     </div>
-    <div class="hf-bar"><div class="hf-bar-fill" style="width:${m.yes}%"></div></div>
-    <div class="hf-meta">
-      <span>$${m.vol.toLocaleString()} volume</span>
-      <span>Expires ${m.exp}</span>
-    </div>
-  `;
+  `).join('');
 }
 
 function filterMarkets(cat, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const filtered = cat === 'all' ? MARKETS : MARKETS.filter(m => m.category === cat);
-  renderMarkets(filtered);
+  renderMarkets(cat);
 }
 
-function sortMarkets(val) {
-  let sorted = [...MARKETS];
-  if (val === 'vol') sorted.sort((a,b) => b.vol - a.vol);
-  else if (val === 'new') sorted.reverse();
-  else if (val === 'close') sorted.sort((a,b) => new Date(a.exp) - new Date(b.exp));
-  renderMarkets(sorted);
-}
-
-// ──────────────────────────────────────────────
-//  INIT
-// ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  renderHeroFeatured();
-  renderMarkets(MARKETS);
-  document.getElementById('navVol').textContent = '$24.8K';
-
-  // Animate stats counter
-  const countUp = (id, target) => {
-    let n = 0;
-    const step = Math.ceil(target / 40);
-    const t = setInterval(() => {
-      n = Math.min(n + step, target);
-      document.getElementById(id).textContent =
-        id === 'statVol' ? `$${n.toLocaleString()}` : n;
-      if (n >= target) clearInterval(t);
-    }, 30);
-  };
-  countUp('statBets', 142);
-  countUp('statVol', 24810);
-});
-</script>
-
-
-
-<script>
-
-
-function showPage(page) {
-  document.getElementById('faucetPage').style.display = page === 'faucet' ? 'block' : 'none';
-  const mainContent = document.getElementById('mainContent') || document.querySelector('.hero-section') || document.querySelector('.bet-amount-section');
-  if (mainContent) mainContent.style.display = page === 'faucet' ? 'none' : '';
-  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
-}
-</script>
-
-
-
-
-
-<script>
-async function connectWallet() {
-  if (!window.ethereum) {
-    alert('Please install MetaMask or Rabby Wallet!');
-    return;
-  }
-  try {
-    const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
-
-    // accountsChanged listener - update UI saat ganti wallet
-    window.ethereum.removeAllListeners('accountsChanged');
-    window.ethereum.on('accountsChanged', function(newAccounts) {
-      if (newAccounts.length === 0) {
-        // Disconnect
-        window.userAddress = null;
-        window._wcRealAddr = null;
-        localStorage.removeItem('arc_address');
-        const btn = document.getElementById('connectBtn');
-        if (btn) { btn.textContent = 'Connect Wallet'; btn.classList.remove('connected'); }
-        const dd = document.getElementById('walletDropdown');
-        if (dd) dd.classList.remove('open');
-      } else {
-        const newAddr = newAccounts[0];
-        window.userAddress = newAddr;
-        window._wcRealAddr = newAddr;
-        const short = newAddr.slice(0,6) + '...' + newAddr.slice(-4);
-        const btn = document.getElementById('connectBtn');
-        if (btn) btn.textContent = short;
-        const addrEl = document.getElementById('wcd-addr');
-        if (addrEl) addrEl.textContent = short;
-        // Update dropdown address & balance
-        const dropAddr = document.getElementById('dropAddress');
-        if (dropAddr) dropAddr.textContent = newAddr.slice(0,8)+'...'+newAddr.slice(-6);
-        const dropMtk = document.getElementById('dropMtk');
-        if (dropMtk) dropMtk.textContent = '... MTK';
-        // Re-fetch MTK balance for new account
-        (async function() {
-          try {
-            const provider2 = new ethers.BrowserProvider(window.ethereum);
-            const mtk2 = new ethers.Contract(MTK_ADDR, ERC20_ABI, provider2);
-            const b2 = await mtk2.balanceOf(newAddr);
-            const d2 = await mtk2.decimals();
-            const bal2 = parseFloat(ethers.formatUnits(b2,d2)).toFixed(2);
-            window.userMtk = bal2;
-            const dropMtk2 = document.getElementById('dropMtk');
-            if (dropMtk2) dropMtk2.textContent = bal2 + ' MTK';
-            const pbMtk2 = document.getElementById('pbMtk');
-            if (pbMtk2) pbMtk2.textContent = bal2 + ' MTK';
-          } catch(e) { console.log('balance fetch err', e); }
-        })();
-      }
-    });
-
-    window.ethereum.on('chainChanged', function() {
-      window.location.reload();
-    });
-    const address = accounts[0];
-    window.userAddress = address;
-    const short = address.slice(0,6) + '...' + address.slice(-4);
-    const btn = document.getElementById('connectBtn');
-    const content = document.getElementById('connectBtnContent');
-    if (btn) btn.classList.add('connected');
-    if (content) content.textContent = short;
-    // Load balances
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const mtk = new ethers.Contract(
-        '0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85',
-        ['function balanceOf(address) view returns (uint256)','function decimals() view returns (uint8)'],
-        provider
-      );
-      const b = await mtk.balanceOf(address);
-      const d = await mtk.decimals();
-      window.userMtk = parseFloat(ethers.formatUnits(b,d)).toFixed(2);
-      const pbMtk = document.getElementById('pbMtk');
-      const betBalance = document.getElementById('betBalance');
-      if (pbMtk) pbMtk.textContent = window.userMtk + ' MTK';
-      if (betBalance) betBalance.textContent = 'Balance: ' + window.userMtk + ' MTK';
-    } catch(e) { console.warn('Balance:', e.message); }
-    // USDC balance
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const ethBal = await provider.getBalance(address);
-      const usdc = parseFloat(ethers.formatEther(ethBal)).toFixed(4);
-      window.userUsdc = usdc;
-      const pbUsdc = document.getElementById('pbUsdc');
-      if (pbUsdc) pbUsdc.textContent = usdc + ' USDC';
-    } catch(e) {}
-    const pbAddress = document.getElementById('pbAddress');
-    if (pbAddress) pbAddress.textContent = short;
-  } catch(e) {
-    console.error('Connect error:', e);
-  }
-}
-function _handleConnectBtn_old() {
+// ─── BET MODAL ────────────────────────────────────────────
+function openBetModal(id) {
+  currentMarket = MARKETS.find(m => m.id === id);
+  if (!currentMarket) return;
+  currentSide = 'yes';
+  document.getElementById('bmQuestion').textContent = currentMarket.question;
+  document.getElementById('sideYes').classList.add('active');
+  document.getElementById('sideNo').classList.remove('active');
+  document.getElementById('betAmountInput').value = '10';
+  document.getElementById('betStatus').textContent = '';
+  document.getElementById('confirmBetBtn').disabled = false;
+  document.getElementById('confirmBetBtn').innerHTML = 'Confirm Bet';
+  // balance
   if (userAddress) {
-    const d = document.getElementById('walletDropdown');
-    d.style.display = d.style.display === 'block' ? 'none' : 'block';
-    document.getElementById('dropAddress').textContent = userAddress.slice(0,8)+'...'+userAddress.slice(-6);
-    document.getElementById('dropWalletName').textContent = localStorage.getItem('connectedWallet') || 'Wallet';
-    const mtk = window.userMtk !== undefined ? window.userMtk : '-';
-    const usdc = window.userUsdc !== undefined ? window.userUsdc : '-';
-    document.getElementById('dropMtk').textContent = mtk + ' MTK';
-    document.getElementById('dropUsdc').textContent = usdc + ' USDC';
-  } else { openModal(); }
+    fetchBalances().then(b => {
+      document.getElementById('bmBalance').textContent = b ? b + ' MTK' : '—';
+    });
+  } else {
+    document.getElementById('bmBalance').textContent = 'Not connected';
+  }
+  updateSummary();
+  document.getElementById('betModal').classList.add('open');
 }
-function disconnectWallet() {
-  var d = document.getElementById('walletDropdown');
-  if(d) d.classList.remove('open');
-  userAddress=null; signer=null; provider=null;
-  window.userAddress=null; window.userMtk=null; window.userUsdc=null;
-  localStorage.removeItem('connectedWallet');
-  localStorage.removeItem('arc_wallet');
-  onDisconnect();
-}
-document.addEventListener('click', function(e) {
-  const btn = document.getElementById('connectBtn');
-  const d = document.getElementById('walletDropdown');
-});
-</script>
 
+function closeBetModal() {
+  document.getElementById('betModal').classList.remove('open');
+}
 
-<script>
-function copyWalletAddress() {
-  const addr = userAddress || window.userAddress;
-  if (!addr) return;
-  navigator.clipboard.writeText(addr).then(() => showToast('Address copied', addr, 'ok'));
-  document.getElementById('walletDropdown').classList.remove('open');
+function selectSide(side) {
+  currentSide = side;
+  document.getElementById('sideYes').classList.toggle('active', side === 'yes');
+  document.getElementById('sideNo').classList.toggle('active', side === 'no');
+  updateSummary();
 }
-function changeWallet() {
-  document.getElementById('walletDropdown').classList.remove('open');
-  openWalletModal();
+
+function setAmt(v) {
+  document.getElementById('betAmountInput').value = v;
+  updateSummary();
 }
-function handleConnectBtn() {
-  const addr = (typeof userAddress !== "undefined" && userAddress) || window.userAddress;
-  if (addr) {
-    const d = document.getElementById("walletDropdown");
-    const isOpen = d.classList.contains("open");
-    d.classList.toggle("open");
-    if (!isOpen) {
-      document.getElementById("dropAddress").textContent = addr.slice(0,8)+"..."+addr.slice(-6);
-      document.getElementById("dropMtk").textContent = (window.userMtk||"-")+" MTK";
-      document.getElementById("dropUsdc").textContent = (window.userUsdc||"-")+" USDC";
-    }
+
+function updateSummary() {
+  if (!currentMarket) return;
+  const amt = parseFloat(document.getElementById('betAmountInput').value) || 0;
+  const odds = currentSide === 'yes' ? currentMarket.yes : currentMarket.no;
+  const payout = odds > 0 ? (amt / (odds / 100)).toFixed(2) : '—';
+  document.getElementById('bmSide').textContent = currentSide.toUpperCase();
+  document.getElementById('bmOdds').textContent = odds + '%';
+  document.getElementById('bmPayout').textContent = '~' + payout + ' MTK';
+  document.getElementById('bmTotal').textContent = amt + ' MTK';
+}
+
+async function confirmBet() {
+  if (!userAddress || !provider) {
+    toast('Connect wallet first', 'err');
+    openWalletModal();
     return;
   }
-  openWalletModal();
-}
-function _handleConnectBtn_unused() {
-  if (typeof userAddress !== "undefined" && userAddress) {
-    const d = document.getElementById("walletDropdown");
-    d.style.display = d.style.display === "block" ? "none" : "block";
-    document.getElementById("dropAddress").textContent = userAddress.slice(0,8)+"..."+userAddress.slice(-6);
-    document.getElementById("dropWalletName").textContent = localStorage.getItem("connectedWallet") || "Wallet";
-    document.getElementById("dropMtk").textContent = (window.userMtk !== undefined ? window.userMtk : "-") + " MTK";
-    document.getElementById("dropUsdc").textContent = (window.userUsdc !== undefined ? window.userUsdc : "-") + " USDC";
-  } else {
-    openModal();
+  if (!currentMarket) return;
+  const amt = parseFloat(document.getElementById('betAmountInput').value);
+  if (!amt || amt <= 0) { toast('Enter a valid amount', 'err'); return; }
+
+  const btn = document.getElementById('confirmBetBtn');
+  const status = document.getElementById('betStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div>Sending...';
+  status.textContent = 'Preparing transaction...';
+
+  try {
+    // Ensure signer is fresh
+    if (!signer) {
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      userAddress = await signer.getAddress();
+    }
+
+    const decimals = 18;
+    const amtWei = ethers.parseUnits(amt.toString(), decimals);
+
+    // 1. Approve MTK
+    status.textContent = 'Step 1/2: Approving MTK...';
+    const mtk = new ethers.Contract(MTK_ADDR, MTK_ABI, signer);
+    const allowance = await mtk.allowance(userAddress, PREDICT_ADDR);
+    if (allowance < amtWei) {
+      const approveTx = await mtk.approve(PREDICT_ADDR, amtWei);
+      await approveTx.wait();
+    }
+
+    // 2. Place bet
+    status.textContent = 'Step 2/2: Placing bet...';
+    const predict = new ethers.Contract(PREDICT_ADDR, PREDICT_ABI, signer);
+    const tx = await predict.bet(currentMarket.id, currentSide === 'yes', amtWei);
+    status.textContent = 'Waiting for confirmation...';
+    const receipt = await tx.wait();
+
+    btn.innerHTML = '✓ Bet Placed!';
+    status.textContent = '✓ Block #' + receipt.blockNumber + ' · ' + tx.hash.slice(0,18) + '...';
+    toast('Bet confirmed on Arc!', 'ok');
+    await fetchBalances();
+    setTimeout(() => closeBetModal(), 3000);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = 'Confirm Bet';
+    const msg = e?.reason || e?.message?.slice(0,80) || 'Transaction failed';
+    status.textContent = '✕ ' + msg;
+    toast(msg, 'err');
   }
 }
-document.addEventListener("click", function(e) {
-  const btn = document.getElementById("connectBtn");
-  const d = document.getElementById("walletDropdown");
-  if (d && btn && !btn.contains(e.target) && !d.contains(e.target)) d.classList.remove('open');
+
+// ─── CLOSE ON OUTSIDE CLICK ───────────────────────────────
+document.addEventListener('click', e => {
+  const dd = document.getElementById('walletDropdown');
+  const btn = document.getElementById('connectBtn');
+  if (dd.classList.contains('open') && !dd.contains(e.target) && !btn.contains(e.target)) {
+    dd.classList.remove('open');
+  }
+  if (document.getElementById('betModal').classList.contains('open')) {
+    if (e.target === document.getElementById('betModal')) closeBetModal();
+  }
+  if (document.getElementById('walletModal').classList.contains('open')) {
+    if (e.target === document.getElementById('walletModal')) closeWalletModal();
+  }
 });
-</script>
 
-<!-- ══ Wallet Modal (Unlloo-style) ══ -->
-<style>
-.wm-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
-.wm-bg.open{display:flex!important}
-.wm-wrap{display:flex;width:90%;max-width:660px;max-height:90vh;background:#131929;border:1px solid #253350;border-radius:18px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.6)}
-.wm-left{width:250px;flex-shrink:0;border-right:1px solid #1e2d45;display:flex;flex-direction:column;overflow-y:auto}
-.wm-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 12px;border-bottom:1px solid #1e2d45;position:sticky;top:0;background:#131929;z-index:1}
-.wm-hdr span{font-size:15px;font-weight:700;color:#e8edf5;font-family:'Inter',sans-serif}
-.wm-hdr button{background:none;border:none;color:#5a7090;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px}
-.wm-hdr button:hover{color:#e8edf5}
-.wm-lbl{font-size:10px;font-weight:600;color:#5a7090;text-transform:uppercase;letter-spacing:.08em;padding:12px 16px 6px}
-.wm-row{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;background:none;border:none;width:100%;text-align:left;transition:background .12s}
-.wm-row:hover{background:rgba(255,255,255,.04)}
-.wm-row.dim{opacity:.38}
-.wm-icon{width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;background:#1a2235;border:1px solid #1e2d45;display:flex;align-items:center;justify-content:center;font-size:18px}
-.wm-icon img{width:36px;height:36px;object-fit:contain;border-radius:8px}
-.wm-wname{font-size:13px;font-weight:500;color:#e8edf5;font-family:'Inter',sans-serif}
-.wm-badge{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:100px;margin-top:2px;text-transform:uppercase}
-.b-ok{background:rgba(0,230,118,.12);color:#00e676}
-.b-new{background:rgba(0,212,255,.12);color:#00d4ff}
-.b-get{background:rgba(255,193,7,.1);color:#ffc107}
-.wm-right{flex:1;padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.wm-ri{font-size:38px;margin-bottom:12px}
-.wm-rt{font-size:16px;font-weight:700;color:#e8edf5;margin-bottom:18px;font-family:'Inter',sans-serif}
-.wm-card{display:flex;align-items:flex-start;gap:10px;text-align:left;background:#1a2235;border:1px solid #1e2d45;border-radius:12px;padding:12px;margin-bottom:10px;width:100%}
-.wm-ci{font-size:20px;flex-shrink:0;padding-top:2px}
-.wm-cn{font-size:13px;font-weight:600;color:#e8edf5;margin-bottom:3px;font-family:'Inter',sans-serif}
-.wm-cd{font-size:11px;color:#8aa0be;line-height:1.5;font-family:'Inter',sans-serif}
-.wm-getbtn{display:inline-block;margin-top:14px;background:#00d4ff;color:#000;font-size:13px;font-weight:700;padding:9px 22px;border-radius:8px;text-decoration:none;transition:opacity .15s;font-family:'Inter',sans-serif}
-.wm-getbtn:hover{opacity:.85}
-@media(max-width:560px){.wm-wrap{flex-direction:column;max-width:96%}.wm-left{width:100%;border-right:none;border-bottom:1px solid #1e2d45}.wm-right{padding:18px}}
-</style>
+// ─── SCROLL FADE ──────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade').forEach(el => obs.observe(el));
 
-<div id="walletModal" class="wm-bg">
-  <div class="wm-wrap">
-    <div class="wm-left">
-      <div class="wm-hdr"><span>Connect Wallet</span><button onclick="closeWalletModal()">✕</button></div>
-      <div id="wm-inst-sec">
-        <div class="wm-lbl" id="wm-inst-lbl">Terinstal</div>
-        <div id="wm-inst"></div>
-        <div class="wm-lbl" style="margin-top:10px">Semua Wallet</div>
-      </div>
-      <div id="wm-all"></div>
-    </div>
-    <div class="wm-right">
-      <div class="wm-ri">🔑</div>
-      <div class="wm-rt">What is a Wallet?</div>
-      <div class="wm-card"><div class="wm-ci">🏠</div><div><div class="wm-cn">Your Digital Asset Home</div><div class="wm-cd">Store, send, and receive MTK tokens and other digital assets on Arc Testnet.</div></div></div>
-      <div class="wm-card"><div class="wm-ci">🔐</div><div><div class="wm-cn">Login Without an Account</div><div class="wm-cd">Just connect your wallet — no sign-up needed. Compatible with Arc Testnet (Chain ID: 5042002).</div></div></div>
-      <a href="https://metamask.io/download" target="_blank" class="wm-getbtn">Get a Wallet →</a>
-    </div>
-  </div>
-</div>
+// ─── INIT ─────────────────────────────────────────────────
+renderMarkets();
 
-<script>
-// ══ Wallet Modal Logic ══
-const _WALLETS = [
-  {id:'metamask',name:'MetaMask',img:'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/SVG_MetaMask_Icon_Color.svg',fb:'🦊',
-   detect(){return window.ethereum?.providers?window.ethereum.providers.some(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):!!(window.ethereum?.isMetaMask&&!window.ethereum?.isRabby)},
-   get(){return window.ethereum?.providers?window.ethereum.providers.find(p=>p.isMetaMask&&!p.isRabby&&!p.isBitKeep):window.ethereum},url:'https://metamask.io/download'},
-  {id:'rabby',name:'Rabby Wallet',img:'https://www.google.com/s2/favicons?sz=64&domain=rabby.io',fb:'🐇',
-   detect(){return !!(window.ethereum?.providers?.some(p=>p.isRabby)||window.ethereum?.isRabby||window.rabby)},
-   get(){if(window.ethereum?.providers){const r=window.ethereum.providers.find(p=>p.isRabby);if(r)return r;}return window.ethereum?.isRabby?window.ethereum:window.rabby||null},url:'https://rabby.io'},
-  {id:'okx',name:'OKX Wallet',img:'https://www.google.com/s2/favicons?sz=64&domain=okx.com',fb:'⭕',
-   detect(){return!!(window.okxwallet)},get(){return window.okxwallet},url:'https://www.okx.com/web3'},
-  {id:'phantom',name:'Phantom',img:'https://www.google.com/s2/favicons?sz=64&domain=phantom.app',fb:'👻',
-   detect(){return!!(window.phantom?.ethereum)},get(){return window.phantom?.ethereum},url:'https://phantom.app'},
-  {id:'subwallet',name:'SubWallet',img:'https://www.google.com/s2/favicons?sz=64&domain=subwallet.app',fb:'🟣',
-   detect(){return!!(window.SubWallet||window.injectedWeb3?.['subwallet-js'])},get(){return window.SubWallet||window.injectedWeb3?.['subwallet-js']||null},url:'https://www.subwallet.app'},
-  {id:'bitget',name:'Bitget Wallet',img:'https://www.google.com/s2/favicons?sz=64&domain=bitget.com',fb:'🔷',
-   detect(){return!!(window.bitkeep?.ethereum)},get(){return window.bitkeep?.ethereum},url:'https://web3.bitget.com'}
-];
-
-function openWalletModal(){
-  _buildWalletModal();
-  document.getElementById('walletModal').classList.add('open');
-}
-function closeWalletModal(){
-  document.getElementById('walletModal').classList.remove('open');
-}
-document.getElementById('walletModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeWalletModal();});
-
-function _buildWalletModal(){
-  const saved=localStorage.getItem('arc_wallet')||localStorage.getItem('connectedWallet');
-  const inst=_WALLETS.filter(w=>w.detect());
-  const notInst=_WALLETS.filter(w=>!w.detect());
-  const iEl=document.getElementById('wm-inst');
-  const aEl=document.getElementById('wm-all');
-  iEl.innerHTML=''; aEl.innerHTML='';
-  document.getElementById('wm-inst-sec').style.display=inst.length?'':'none';
-  function row(w,ok){
-    const b=document.createElement('button');
-    b.className='wm-row'+(ok?'':' dim');
-    const isRecent=w.id===saved;
-    const badge=ok?`<span class="wm-badge ${isRecent?'b-new':'b-ok'}">${isRecent?'Terkini':'Terinstal'}</span>`:`<span class="wm-badge b-get">Install</span>`;
-    b.innerHTML=`<div class="wm-icon"><img src="${w.img}" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span style="display:none">${w.fb}</span></div><div><div class="wm-wname">${w.name}</div>${badge}</div>`;
-    b.onclick=()=>ok?(closeWalletModal(),_connectFromModal(w)):window.open(w.url,'_blank');
-    return b;
-  }
-  inst.forEach(w=>iEl.appendChild(row(w,true)));
-  notInst.forEach(w=>aEl.appendChild(row(w,false)));
-}
-
-async function _connectFromModal(w){
-  try{
-    const raw=w.get();
-    if(!raw){window.open(w.url,'_blank');return;}
-    const prov=new ethers.BrowserProvider(raw);
-    await prov.send('eth_requestAccounts',[]);
-    const net=await prov.getNetwork();
-    const ARC_HEX='0x'+Number(5042002).toString(16);
-    if(Number(net.chainId)!==5042002){
-      try{await raw.request({method:'wallet_switchEthereumChain',params:[{chainId:ARC_HEX}]});}
-      catch(se){if(se.code===4902)await raw.request({method:'wallet_addEthereumChain',params:[{chainId:ARC_HEX,chainName:'Arc Network Testnet',nativeCurrency:{name:'USD Coin',symbol:'USDC',decimals:18},rpcUrls:['https://rpc.testnet.arc.network'],blockExplorerUrls:['https://testnet.arcscan.app']}]});}
+// Auto-reconnect if already authorized (no popup)
+if (window.ethereum) {
+  window.ethereum.request({ method: 'eth_accounts' }).then(async accounts => {
+    if (accounts && accounts.length > 0) {
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      userAddress = accounts[0];
+      setConnectedUI(userAddress);
+      await fetchBalances();
+      setupListeners(window.ethereum);
     }
-    localStorage.setItem('arc_wallet',w.id);
-    // Panggil connectWallet yang sudah ada di index.html dengan provider baru
-    if(typeof connectWallet === 'function'){
-      window._selectedProvider = raw;
-      await connectWallet(raw);
-    } else {
-      // fallback: reload agar auto-connect via localStorage
-      location.reload();
-    }
-    raw.on('accountsChanged',a=>a.length?location.reload():disconnectWallet());
-    raw.on('chainChanged',()=>location.reload());
-  }catch(e){
-    console.error(e);
-    alert(e.message?.includes('rejected')?'Koneksi ditolak.':'Error: '+(e.shortMessage||e.message));
-  }
+  }).catch(() => {});
 }
-
-// connectBtn via onclick=handleConnectBtn()
 </script>
-
-
-
-
-<footer style="background:#0a0b10;border-top:1px solid rgba(255,255,255,0.06);padding:48px 28px 28px">
-  <div style="max-width:1200px;margin:0 auto">
-    <div style="display:flex;gap:48px;flex-wrap:wrap;margin-bottom:40px">
-      <div style="flex:0 0 220px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:8px;height:8px;border-radius:50%;background:#1d6ef7;box-shadow:0 0 10px rgba(29,110,247,0.5)"></div>
-          <span style="font-weight:800;font-size:16px;color:#fff;letter-spacing:-0.03em">ARC-<span style="color:#1d6ef7">ID</span></span>
-        </div>
-        <p style="font-size:12px;color:#545670;line-height:1.7;margin-bottom:16px">On-chain prediction market built on Arc Testnet. Bet MTK tokens on real-world outcomes.</p>
-        <div style="display:flex;gap:10px">
-          <a href="https://github.com/frankxeth/arc-network" target="_blank" style="width:32px;height:32px;border-radius:8px;background:#13141e;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:#9295a8;text-decoration:none;font-size:14px" title="GitHub">⌥</a>
-          <a href="https://twitter.com/l1luna_" target="_blank" style="width:32px;height:32px;border-radius:8px;background:#13141e;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:#9295a8;text-decoration:none;font-size:14px" title="Twitter">𝕏</a>
-          <a href="https://testnet.arcscan.app" target="_blank" style="width:32px;height:32px;border-radius:8px;background:#13141e;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:#9295a8;text-decoration:none;font-size:14px" title="Explorer">⛓</a>
-        </div>
-      </div>
-      <div style="flex:1;display:flex;gap:48px;flex-wrap:wrap">
-        <div>
-          <div style="font-size:11px;font-weight:600;color:#9295a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Platform</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <a href="#" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">Markets</a>
-            <a href="#" onclick="showToast('Portfolio coming soon','','wait');return false" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">Portfolio</a>
-            <a href="faucet.html" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">Faucet</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:600;color:#9295a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Network</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <a href="https://testnet.arcscan.app" target="_blank" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">Explorer</a>
-            <a href="https://arc.network" target="_blank" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">Arc Network</a>
-            <a href="https://rpc.testnet.arc.network" target="_blank" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">RPC Endpoint</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:600;color:#9295a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Developers</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <a href="https://github.com/frankxeth/arc-network" target="_blank" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">GitHub</a>
-            <a href="https://testnet.arcscan.app/address/0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85" target="_blank" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">MTK Contract</a>
-            <a href="https://testnet.arcscan.app/address/0xB471266db352b095D766F89dA3a6981d62407Deb" target="_blank" style="font-size:13px;color:#545670;text-decoration:none" onmouseover="this.style.color='#e8eaf2'" onmouseout="this.style.color='#545670'">Hello Contract</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-      <div style="font-size:11px;color:#545670">© 2025 ARC-ID. Built on Arc Testnet · Chain ID 5042002</div>
-      
-    </div>
-  </div>
-</footer>
-
 </body>
 </html>
