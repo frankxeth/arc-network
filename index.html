@@ -830,7 +830,29 @@ function toast(msg, type='') {
 }
 
 // ─── WALLET ───────────────────────────────────────────────
+// EIP-6963 provider store
+const _providers = {};
+window.addEventListener('eip6963:announceProvider', e => {
+  _providers[e.detail.info.rdns] = e.detail.provider;
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+
 function getEthereum(type) {
+  const map = {
+    'metamask': ['io.metamask', 'io.metamask.flask'],
+    'rabby': ['io.rabby'],
+    'okx': ['com.okex.wallet', 'com.okx.wallet'],
+  };
+  const rdnsList = map[type] || [];
+  for (const rdns of rdnsList) {
+    if (_providers[rdns]) return _providers[rdns];
+  }
+  // fallback: providers array
+  if (window.ethereum?.providers) {
+    if (type === 'metamask') return window.ethereum.providers.find(p => p.isMetaMask && !p.isRabby) || window.ethereum;
+    if (type === 'rabby') return window.ethereum.providers.find(p => p.isRabby) || window.ethereum;
+    if (type === 'okx') return window.ethereum.providers.find(p => p.isOKExWallet) || window.okxwallet || window.ethereum;
+  }
   if (type === 'okx' && window.okxwallet) return window.okxwallet;
   if (type === 'rabby' && window.rabby) return window.rabby;
   return window.ethereum;
