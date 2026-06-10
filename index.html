@@ -417,12 +417,39 @@ nav{
 
 /* ─── RESPONSIVE ─────────────────────────────────────────────── */
 @media(max-width:768px){
-  .market-table th:nth-child(3),.market-table td:nth-child(3),
-  .market-table th:nth-child(4),.market-table td:nth-child(4){display:none}
-  nav{padding:0 14px}
-  .nav-tab{padding:0 10px;font-size:12px}
-  .market-header,.market-controls,.market-table-wrap{padding-left:14px;padding-right:14px}
+  nav{padding:0 12px}
+  .logo{margin-right:12px;font-size:14px}
+  .nav-tab{padding:0 8px;font-size:12px}
+  .testnet-badge{display:none}
+  #connectBtn{height:30px;padding:0 12px;font-size:12px}
+  .market-header{padding:20px 14px 12px;flex-direction:column;gap:14px}
+  .market-header-stats{gap:20px}
+  .mh-stat-val{font-size:13px}
+  .market-controls{padding:0 14px 12px;gap:6px}
+  .filter-chip{height:28px;padding:0 10px;font-size:11px}
+  .market-table-wrap{padding:0 14px 60px}
+
+  /* Switch table to card layout on mobile */
+  .market-table thead{display:none}
+  .market-table,.market-table tbody,.market-row,.market-row td{display:block;width:100%}
+  .market-row{padding:14px 0;border-bottom:1px solid var(--border)}
+  .market-row td{padding:0;border:none}
+  .mr-question{font-size:13px;margin-bottom:6px;max-width:100%}
+  .mr-tag{margin-bottom:8px;display:inline-block}
+
+  /* Odds + actions in one row */
+  .market-row td:nth-child(2){display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .market-row td:nth-child(3),.market-row td:nth-child(4){display:none}
+  .mr-actions{justify-content:flex-start;gap:6px}
+  .bet-yes-btn,.bet-no-btn{height:26px;padding:0 12px;font-size:11px}
+  .mr-bar{width:60px}
+
   .detail-panel{width:100vw}
+  .port-stats{grid-template-columns:1fr 1fr}
+  .port-wrap{padding:20px 14px 60px}
+}
+@media(max-width:400px){
+  .nav-tab{padding:0 6px;font-size:11px}
   .port-stats{grid-template-columns:1fr}
 }
 </style>
