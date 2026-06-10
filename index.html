@@ -2092,23 +2092,49 @@
     document.getElementById('summaryStake').textContent = amount > 0 ? amount + ' MTK' : '0 MTK';
   }
 
-  async function confirmBet() {
-    if (!selectedChoice) { showToast('Select YES or NO'); return; }
-    const amount = parseFloat(document.getElementById('betAmount').value);
-    if (!amount || amount <= 0) { showToast('Enter a valid amount'); return; }
-    if (amount > mtkBalance) { showToast('Insufficient MTK balance'); return; }
-    const m = markets.find(mk => mk.id === currentMarketId);
-    const odds = selectedChoice === 'YES' ? m.yesOdds : m.noOdds;
-    // Simulate tx
-    const btn = document.getElementById('confirmBetBtn');
-    btn.textContent = 'Confirming...';
-    btn.disabled = true;
-    await new Promise(r => setTimeout(r, 1400));
-    userPositions.push({ marketId: currentMarketId, side: selectedChoice, amount, entryOdds: odds, ts: Date.now() });
-    mtkBalance -= amount;
+async
+
+  const amount = parseFloat(document.getElementById('betAmount').value);
+  if (!amount || amount <= 0) {
+    showToast('Masukkan jumlah yang valid');
+    return;
+  }
+
+  if (amount > mtkBalance) {
+    showToast('Insufficient MTK balance');
+    return;
+  }
+
+  const btn = document.getElementById('confirmBetBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Approving MTK...';
+  btn.disabled = true;
+
+  try {
+    // Approve MTK
+    const approveOk = await approveMTK(amount);
+    if (!approveOk) return;
+
+    // Place Bet
+    btn.textContent = 'Placing Bet...';
+    const txHash = await placeBetOnChain(currentMarketId, selectedChoice === 'YES', amount);
+
+    showToast(`✅ Bet berhasil! Tx: ${txHash.slice(0, 12)}...`);
+
+    // Update UI
+    mtkBalance = Math.max(0, mtkBalance - amount);
     document.getElementById('mtkBadge').textContent = mtkBalance.toLocaleString() + ' MTK';
-    btn.textContent = 'Confirm Bet';
+
+    closeModal();
+
+  } catch (error) {
+    console.error("Bet error:", error);
+    showToast('Transaction gagal: ' + (error.shortMessage || error.message || error));
+  } finally {
+    btn.textContent = originalText;
     btn.disabled = false;
+  }
+}
     closeModal();
     showToast(`Bet placed: ${amount} MTK on ${selectedChoice} ✓`);
     // Animate volume
@@ -2401,3 +2427,184 @@
 </script>
 </body>
 </html>
+  /* === PREDICT MARKET INTEGRATION === */
+  const PREDICT_MARKET_ADDR = "0xB471266db352b095D766F89dA3a6981d62407Deb";
+
+  const predictMarketABI = [
+    {
+      "inputs": [{"internalType":"uint256","name":"marketId","type":"uint256"},{"internalType":"bool","name":"outcome","type":"bool"},{"internalType":"uint256","name":"amount","type":"uint256"}],
+      "name": "bet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType":"uint256","name":"marketId","name":"marketId","type":"uint256"},{"internalType":"bool","name":"isYes","type":"bool"},{"internalType":"uint256","name":"amount","type":"uint256"}],
+      "name": "placeBet",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType":"uint256","name":"marketId","type":"uint256"},{"internalType":"bool","name":"winningOutcome","type":"bool"}],
+      "name": "resolveMarket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType":"uint256","name":"marketId","type":"uint256"}],
+      "name": "claimWinnings",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType":"uint256","name":"marketId","type":"uint256"}],
+      "name": "getMarket",
+      "outputs": [{"internalType":"tuple","name":"","type":"tuple"}],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
+
+/* === WEB3 HELPERS === */
+async function approveMTK(amount) {
+  const amountWei = (BigInt(Math.floor(amount * 1e18))).toString(16);
+  try {
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: walletAddr,
+        to: MTK_ADDR,
+        data: '0x095ea7b3' + 
+              PREDICT_MARKET_ADDR.slice(2).padStart(64, '0') + 
+              amountWei.padStart(64, '0')
+      }]
+    });
+    showToast('MTK Approved');
+    return true;
+  } catch (e) {
+    showToast('Approve failed');
+    console.error(e);
+    return false;
+  }
+}
+
+async function placeBetOnChain(marketId, isYes, amount) {
+  const amountWei = (BigInt(Math.floor(amount * 1e18))).toString(16);
+  const marketIdHex = BigInt(marketId).toString(16).padStart(64, '0');
+  const isYesHex = isYes ? '0000000000000000000000000000000000000000000000000000000000000001' : '0000000000000000000000000000000000000000000000000000000000000000';
+
+  // Coba function "bet" dulu
+  const data = '0x' + 'b1283e77' + marketIdHex + isYesHex + amountWei.padStart(64, '0'); // sesuaikan signature kalau beda
+
+  const txHash = await window.ethereum.request({
+    method: 'eth_sendTransaction',
+    params: [{
+      from: walletAddr,
+      to: PREDICT_MARKET_ADDR,
+      data: data,
+      gas: '0x' + (400000).toString(16)
+    }]
+  });
+
+  return txHash;
+}
+
+/* === WEB3 HELPERS FOR PREDICT MARKET === */
+async function approveMTK(amount) {
+  try {
+    const amountWei = BigInt(Math.floor(amount * 1e18));
+    const data = '0x095ea7b3' + 
+                 PREDICT_MARKET_ADDR.toLowerCase().slice(2).padStart(64, '0') + 
+                 amountWei.toString(16).padStart(64, '0');
+
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: walletAddr,
+        to: MTK_ADDR,
+        data: data
+      }]
+    });
+    showToast('MTK Approved successfully');
+    return true;
+  } catch (e) {
+    console.error(e);
+    showToast('Approve gagal: ' + e.message);
+    return false;
+  }
+}
+
+async function placeBetOnChain(marketId, isYes, amount) {
+  try {
+    const amountWei = BigInt(Math.floor(amount * 1e18));
+    const marketIdHex = BigInt(marketId).toString(16).padStart(64, '0');
+    const isYesHex = isYes ? '01' : '00';
+
+    // Try bet(uint256,bool,uint256) signature - adjust if needed
+    const functionSig = 'b1283e77'; // sesuaikan dengan contract-mu
+    const data = '0x' + functionSig + marketIdHex + '000000000000000000000000000000000000000000000000000000000000000' + isYesHex + amountWei.toString(16).padStart(64, '0');
+
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: walletAddr,
+        to: PREDICT_MARKET_ADDR,
+        data: data,
+        gas: '0x' + (450000).toString(16)
+      }]
+    });
+    return txHash;
+  } catch (e) {
+    console.error(e);
+    showToast('Place Bet gagal');
+    throw e;
+  }
+}
+
+async function confirmBet() {
+  if (!selectedChoice || !walletAddr) {
+    showToast('Connect wallet & pilih YES/NO');
+    return;
+  }
+
+  const amount = parseFloat(document.getElementById('betAmount').value);
+  if (!amount || amount <= 0) {
+    showToast('Masukkan jumlah yang valid');
+    return;
+  }
+
+  if (amount > mtkBalance) {
+    showToast('Insufficient MTK balance');
+    return;
+  }
+
+  const btn = document.getElementById('confirmBetBtn');
+  const originalText = btn.textContent;
+  btn.textContent = 'Approving MTK...';
+  btn.disabled = true;
+
+  try {
+    const approveOk = await approveMTK(amount);
+    if (!approveOk) return;
+
+    btn.textContent = 'Placing Bet...';
+    const txHash = await placeBetOnChain(currentMarketId, selectedChoice === 'YES', amount);
+
+    showToast(`✅ Bet berhasil! Tx: ${txHash.slice(0, 12)}...`);
+
+    mtkBalance = Math.max(0, mtkBalance - amount);
+    document.getElementById('mtkBadge').textContent = mtkBalance.toLocaleString() + ' MTK';
+
+    closeModal();
+
+  } catch (error) {
+    console.error("Bet error:", error);
+    showToast('Transaction gagal: ' + (error.shortMessage || error.message || error));
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
