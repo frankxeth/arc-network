@@ -426,7 +426,7 @@ nav{
       <div class="net-warn" id="netWarn">⚠️ Wrong network — please switch to Arc Testnet (Chain ID: 5042002)</div>
 
       <!-- Not connected: wallet chooser -->
-      <div id="connectSection">
+      <div id="connectSection" class="hidden">
         <div class="wallet-section-label">Choose wallet to connect</div>
         <div class="wallet-grid" id="walletGrid"></div>
         <p style="font-size:11px;color:var(--t3);margin-top:10px;text-align:center">
@@ -435,6 +435,10 @@ nav{
       </div>
 
       <!-- Connected: balances + claim -->
+      <div id="loadingSection" style="text-align:center;padding:32px 0;color:var(--t3)">
+        <div class="spin" style="width:18px;height:18px;border-width:2px;margin:0 auto 10px;display:block"></div>
+        <div style="font-size:13px">Connecting wallet...</div>
+      </div>
       <div id="claimSection" class="hidden">
 
         <div class="connected-info">
@@ -786,28 +790,42 @@ function setStatus(msg,type){
 
 // ── Init ──────────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
-  await new Promise(r=>setTimeout(r,500));
+  await new Promise(r=>setTimeout(r,400));
   buildWalletGrids();
-  const saved=localStorage.getItem(LS_KEY);
-  if(!saved)return;
-  const w=WALLETS.find(x=>x.id===saved);
-  if(!w||!w.detect())return;
-  try{
-    const raw=w.get();if(!raw)return;
-    const accs=await raw.request({method:'eth_accounts'});
-    if(!accs.length)return;
-    provider=new ethers.BrowserProvider(raw);
-    const net=await provider.getNetwork();
-    if(Number(net.chainId)!==CHAIN_ID)return;
-    signer=await provider.getSigner();
-    account=await signer.getAddress();
-    rawProvider=raw;
-    showConnected(w);
-    await loadBalances();
-    await checkCooldown();
-    raw.on('accountsChanged',a=>a.length?location.reload():doDisconnect());
-    raw.on('chainChanged',()=>location.reload());
-  }catch(e){console.warn('auto-connect:',e);}
+
+  const saved = localStorage.getItem(LS_KEY);
+  const w = saved ? WALLETS.find(x=>x.id===saved) : null;
+
+  // Coba auto-connect tanpa prompt
+  if(w && w.detect()){
+    try{
+      const raw = w.get();
+      if(raw){
+        // eth_accounts tidak trigger popup - hanya baca akun yg sudah diizinkan
+        const accs = await raw.request({method:'eth_accounts'});
+        if(accs.length){
+          provider = new ethers.BrowserProvider(raw);
+          const net = await provider.getNetwork();
+          if(Number(net.chainId) === CHAIN_ID){
+            signer = await provider.getSigner();
+            account = await signer.getAddress();
+            rawProvider = raw;
+            document.getElementById('loadingSection').style.display='none';
+            showConnected(w);
+            await loadBalances();
+            await checkCooldown();
+            raw.on('accountsChanged',a=>a.length?location.reload():doDisconnect());
+            raw.on('chainChanged',()=>location.reload());
+            return; // sukses, selesai
+          }
+        }
+      }
+    }catch(e){console.warn('auto-connect:',e);}
+  }
+
+  // Gagal auto-connect: tampilkan wallet chooser
+  document.getElementById('loadingSection').style.display='none';
+  document.getElementById('connectSection').classList.remove('hidden');
 });
 </script>
 </body>
