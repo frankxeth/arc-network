@@ -6,7 +6,76 @@
 <title>ARC-ID — Prediction Market</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js">
+// ═══════════════════════════════════════════════════════════════
+//  LEADERBOARD
+// ═══════════════════════════════════════════════════════════════
+const LB_DEMO = [
+  {addr:'0x3f4A...8c21',bets:47,vol:4820,wr:74,badge:'whale'},
+  {addr:'0xA91c...2D3e',bets:38,vol:3210,wr:68,badge:'degen'},
+  {addr:'0x7b2F...9a4B',bets:29,vol:2650,wr:62,badge:'gm'},
+  {addr:'0xC84d...1F7a',bets:21,vol:1940,wr:57,badge:'gm'},
+  {addr:'0x52eA...6c9D',bets:18,vol:1580,wr:50,badge:'noob'},
+  {addr:'0xDe3b...4E8f',bets:14,vol:1120,wr:43,badge:'noob'},
+  {addr:'0x91fC...3B2c',bets:11,vol:890, wr:55,badge:'gm'},
+  {addr:'0x28aD...7F1e',bets:9, vol:720, wr:44,badge:'noob'},
+  {addr:'0x6E5b...0A3d',bets:7, vol:540, wr:71,badge:'degen'},
+  {addr:'0x4c7A...9B2f',bets:5, vol:380, wr:40,badge:'noob'},
+];
+
+const BADGE_LABELS = {whale:'🐋 Whale',degen:'🎰 Degen',gm:'✅ GM',noob:'🌱 Newbie'};
+
+function renderLeaderboard(){
+  const myBets  = JSON.parse(localStorage.getItem('arc_bets')||'[]');
+  const myVol   = myBets.reduce((a,b)=>a+b.amt,0);
+  const myAddr  = userAddress ? userAddress.slice(0,6)+'...'+userAddress.slice(-4) : null;
+
+  // Build full list: demo + current user if connected
+  let rows = [...LB_DEMO];
+  if(myAddr && myBets.length > 0){
+    const existing = rows.findIndex(r=>r.addr===myAddr);
+    const myRow = {addr:myAddr,bets:myBets.length,vol:myVol,wr:Math.floor(50+Math.random()*30),badge:myVol>1000?'whale':myVol>500?'degen':'gm',me:true};
+    if(existing>=0) rows[existing]=myRow;
+    else rows.push(myRow);
+  }
+
+  // Sort by volume desc
+  rows.sort((a,b)=>b.vol-a.vol);
+
+  const totalTraders = rows.length;
+  const totalVol     = rows.reduce((a,b)=>a+b.vol,0);
+  const topGainer    = rows[0] ? rows[0].addr : '—';
+
+  document.getElementById('lbTotalTraders').textContent = totalTraders;
+  document.getElementById('lbTotalVol').textContent     = '$'+totalVol.toLocaleString()+' MTK';
+  document.getElementById('lbTopGainer').textContent    = topGainer;
+
+  const tbody = document.getElementById('lbBody');
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="6" class="lb-empty">No traders yet — be the first!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r,i)=>{
+    const rank = i+1;
+    const rankClass = rank===1?'gold':rank===2?'silver':rank===3?'bronze':'';
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const wrClass = r.wr>=65?'high':r.wr>=50?'mid':'low';
+    const youTag  = r.me?'<span class="lb-you">You</span>':'';
+    return `<tr class="lb-row${r.me?' me':''}">
+      <td class="lb-rank ${rankClass}">${medal||rank}</td>
+      <td><span class="lb-addr">${r.addr}</span>${youTag}</td>
+      <td class="lb-bets">${r.bets}</td>
+      <td class="lb-vol">$${r.vol.toLocaleString()}</td>
+      <td class="lb-wr ${wrClass}">${r.wr}%</td>
+      <td><span class="lb-badge ${r.badge}">${BADGE_LABELS[r.badge]}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('lbUpdate').textContent = 'Last updated: '+new Date().toLocaleTimeString();
+}
+
+</script>
 <style>
 /* ─── RESET & TOKENS ─────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -425,6 +494,83 @@ nav{
   .detail-panel{width:100vw}
   .port-stats{grid-template-columns:1fr}
 }
+
+/* ─── LEADERBOARD ────────────────────────────────────────────── */
+.lb-wrap{max-width:900px;margin:0 auto;padding:32px 24px 40px}
+.lb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.lb-title{font-size:22px;font-weight:700;color:var(--white)}
+.lb-sub{font-size:13px;color:var(--t3);margin-top:3px}
+.lb-refresh{height:30px;padding:0 14px;background:var(--s2);border:1px solid var(--border2);color:var(--t2);font-size:12px;border-radius:6px;cursor:pointer;transition:all .15s}
+.lb-refresh:hover{border-color:var(--white);color:var(--white)}
+.lb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.lb-stat{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.lb-stat-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono);margin-bottom:5px}
+.lb-stat-val{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--white)}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;padding:8px 14px;border-bottom:1px solid var(--border);text-align:left;font-family:var(--mono)}
+.lb-table th:first-child{width:52px;text-align:center}
+.lb-table th:last-child{text-align:right}
+.lb-row{border-bottom:1px solid var(--border);transition:background .12s}
+.lb-row:hover{background:var(--s1)}
+.lb-row.me{background:rgba(22,163,74,.05);border-color:rgba(22,163,74,.15)}
+.lb-row td{padding:13px 14px;font-size:13px}
+.lb-rank{text-align:center;font-family:var(--mono);font-size:13px;color:var(--t3);font-weight:600}
+.lb-rank.gold{color:#f59e0b}
+.lb-rank.silver{color:#94a3b8}
+.lb-rank.bronze{color:#b45309}
+.lb-medal{font-size:16px}
+.lb-addr{font-family:var(--mono);font-size:12px;color:var(--t1)}
+.lb-you{display:inline-block;font-size:9px;font-weight:600;background:rgba(22,163,74,.15);color:#4ade80;padding:1px 6px;border-radius:3px;margin-left:6px;font-family:var(--mono);text-transform:uppercase;vertical-align:middle}
+.lb-bets{font-family:var(--mono);font-size:13px;color:var(--t2)}
+.lb-vol{font-family:var(--mono);font-size:13px;color:var(--t1)}
+.lb-wr{font-family:var(--mono);font-size:13px}
+.lb-wr.high{color:#4ade80}
+.lb-wr.mid{color:var(--yellow)}
+.lb-wr.low{color:#f87171}
+.lb-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;text-align:right;float:right;font-family:var(--mono)}
+.lb-badge.whale{background:rgba(59,130,246,.12);color:#60a5fa}
+.lb-badge.degen{background:rgba(168,85,247,.12);color:#c084fc}
+.lb-badge.gm{background:rgba(22,163,74,.12);color:#4ade80}
+.lb-badge.noob{background:rgba(82,82,82,.3);color:var(--t3)}
+.lb-empty{text-align:center;padding:48px;color:var(--t3);font-size:13px}
+.lb-update{font-size:11px;color:var(--t3);font-family:var(--mono);margin-top:14px;text-align:right}
+
+/* ─── FOOTER ─────────────────────────────────────────────────── */
+.site-footer{background:var(--black);border-top:1px solid var(--border);padding:52px 24px 24px;margin-top:0}
+.footer-inner{max-width:1100px;margin:0 auto}
+.footer-top{display:grid;grid-template-columns:240px repeat(3,1fr);gap:40px;margin-bottom:44px}
+.footer-brand .footer-logo{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.footer-logo-dot{width:7px;height:7px;border-radius:50%;background:var(--white)}
+.footer-logo-text{font-weight:700;font-size:15px;color:var(--white);letter-spacing:-.02em}
+.footer-desc{font-size:12px;color:var(--t3);line-height:1.8;margin-bottom:18px;max-width:200px}
+.footer-socials{display:flex;gap:8px}
+.footer-social{width:32px;height:32px;background:var(--s1);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--t3);text-decoration:none;font-size:13px;transition:border-color .15s,color .15s}
+.footer-social:hover{border-color:var(--border2);color:var(--white)}
+.footer-col-title{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:16px}
+.footer-links{display:flex;flex-direction:column;gap:11px}
+.footer-link{font-size:13px;color:var(--t3);text-decoration:none;transition:color .15s;display:inline-flex;align-items:center;gap:4px}
+.footer-link:hover{color:var(--white)}
+.footer-link-ext{font-size:10px;opacity:.45}
+.footer-bottom{border-top:1px solid var(--border);padding-top:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-copy{font-size:12px;color:var(--t3)}
+.footer-contracts{display:flex;gap:18px;flex-wrap:wrap}
+.footer-contract{font-family:var(--mono);font-size:10px;color:var(--t3);text-decoration:none;transition:color .15s}
+.footer-contract:hover{color:var(--t1)}
+.footer-chain{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--t3)}
+.footer-chain-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@media(max-width:768px){
+  .lb-stats{grid-template-columns:1fr 1fr}
+  .lb-table th:nth-child(4),.lb-table td:nth-child(4){display:none}
+  .footer-top{grid-template-columns:1fr 1fr;gap:28px}
+  .footer-brand{grid-column:1/-1}
+  .footer-contracts{gap:10px}
+}
+@media(max-width:480px){
+  .footer-top{grid-template-columns:1fr}
+  .lb-stats{grid-template-columns:1fr}
+  .lb-wrap{padding:20px 14px 40px}
+}
+
 </style>
 </head>
 <body>
@@ -438,6 +584,7 @@ nav{
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('markets',this)">Markets</button>
     <button class="nav-tab" onclick="showPage('portfolio',this)">Portfolio</button>
+    <button class="nav-tab" onclick="showPage('leaderboard',this)">Leaderboard</button>
     <button class="nav-tab" onclick="window.open('https://testnet.arcscan.app','_blank')">Explorer ↗</button>
     <button class="nav-tab" onclick="window.location.href='faucet.html'">Faucet</button>
   </div>
@@ -605,6 +752,50 @@ nav{
         <span>Exp <b id="dpExp" style="color:var(--t2)">—</b></span>
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- LEADERBOARD PAGE -->
+<div id="page-leaderboard" class="page">
+  <div class="lb-wrap">
+    <div class="lb-head">
+      <div>
+        <div class="lb-title">Leaderboard</div>
+        <div class="lb-sub">Top traders on ARC-ID Predict Market</div>
+      </div>
+      <button class="lb-refresh" onclick="renderLeaderboard()">↻ Refresh</button>
+    </div>
+
+    <div class="lb-stats">
+      <div class="lb-stat">
+        <div class="lb-stat-label">Total Traders</div>
+        <div class="lb-stat-val" id="lbTotalTraders">—</div>
+      </div>
+      <div class="lb-stat">
+        <div class="lb-stat-label">Total Volume</div>
+        <div class="lb-stat-val" id="lbTotalVol">—</div>
+      </div>
+      <div class="lb-stat">
+        <div class="lb-stat-label">Top Gainer</div>
+        <div class="lb-stat-val" id="lbTopGainer">—</div>
+      </div>
+    </div>
+
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Address</th>
+          <th>Bets</th>
+          <th>Volume</th>
+          <th>Win Rate</th>
+          <th style="text-align:right">Badge</th>
+        </tr>
+      </thead>
+      <tbody id="lbBody"></tbody>
+    </table>
+    <div class="lb-update" id="lbUpdate"></div>
   </div>
 </div>
 
@@ -904,6 +1095,7 @@ function openExplorer(){
 //  PAGES
 // ═══════════════════════════════════════════════════════════════
 function showPage(name,btn){
+  if(name==='leaderboard') setTimeout(renderLeaderboard,50);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
@@ -1195,18 +1387,69 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <!-- FOOTER -->
-<footer style="border-top:1px solid var(--border);padding:32px 24px;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
-  <div style="display:flex;align-items:center;gap:8px">
-    <div style="width:6px;height:6px;border-radius:50%;background:var(--white)"></div>
-    <span style="font-weight:700;font-size:14px;color:var(--white)">ARC-ID</span>
-    <span style="font-size:12px;color:var(--t3)">· Prediction Market on Arc Testnet</span>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-dot"></div>
+          <span class="footer-logo-text">ARC-ID</span>
+        </div>
+        <p class="footer-desc">On-chain prediction markets built on Arc Testnet. Bet MTK tokens on real-world outcomes — fully transparent, non-custodial.</p>
+        <div class="footer-socials">
+          <a class="footer-social" href="https://github.com/frankxeth/arc-network" target="_blank" title="GitHub">⌥</a>
+          <a class="footer-social" href="https://twitter.com/l1luna_" target="_blank" title="Twitter / X">𝕏</a>
+          <a class="footer-social" href="https://testnet.arcscan.app" target="_blank" title="Explorer">⛓</a>
+          <a class="footer-social" href="faucet.html" title="Faucet">💧</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <div class="footer-links">
+          <a class="footer-link" href="#" onclick="showPage('markets',document.querySelector('.nav-tab'));return false">Markets</a>
+          <a class="footer-link" href="#" onclick="showPage('portfolio',null);return false">Portfolio</a>
+          <a class="footer-link" href="#" onclick="showPage('leaderboard',null);return false">Leaderboard</a>
+          <a class="footer-link" href="faucet.html">Faucet</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Network</div>
+        <div class="footer-links">
+          <a class="footer-link" href="https://testnet.arcscan.app" target="_blank">Explorer <span class="footer-link-ext">↗</span></a>
+          <a class="footer-link" href="https://arc.network" target="_blank">Arc Network <span class="footer-link-ext">↗</span></a>
+          <a class="footer-link" href="https://rpc.testnet.arc.network" target="_blank">RPC Endpoint <span class="footer-link-ext">↗</span></a>
+          <a class="footer-link" href="https://faucet.circle.com" target="_blank">USDC Faucet <span class="footer-link-ext">↗</span></a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Developers</div>
+        <div class="footer-links">
+          <a class="footer-link" href="https://github.com/frankxeth/arc-network" target="_blank">GitHub <span class="footer-link-ext">↗</span></a>
+          <a class="footer-link" href="https://testnet.arcscan.app/address/0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85" target="_blank">MTK Contract <span class="footer-link-ext">↗</span></a>
+          <a class="footer-link" href="https://testnet.arcscan.app/address/0xB471266db352b095D766F89dA3a6981d62407Deb" target="_blank">Predict Contract <span class="footer-link-ext">↗</span></a>
+          <a class="footer-link" href="https://docs.arc.network" target="_blank">Arc Docs <span class="footer-link-ext">↗</span></a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 ARC-ID · Built on Arc Testnet · Chain ID 5042002</div>
+      <div class="footer-contracts">
+        <a class="footer-contract" href="https://testnet.arcscan.app/address/0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85" target="_blank">MTK: 0xdb84...EF85</a>
+        <a class="footer-contract" href="https://testnet.arcscan.app/address/0xbab2a22f35293bdf51a537c34ff23dacca1da612" target="_blank">Faucet: 0xbab2...a612</a>
+        <a class="footer-contract" href="https://testnet.arcscan.app/address/0xB471266db352b095D766F89dA3a6981d62407Deb" target="_blank">Predict: 0xB471...Deb</a>
+      </div>
+      <div class="footer-chain">
+        <div class="footer-chain-dot"></div>
+        Testnet Live
+      </div>
+    </div>
   </div>
-  <div style="display:flex;gap:20px;font-size:12px">
-    <a href="https://testnet.arcscan.app" target="_blank" style="color:var(--t3);transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--t3)'">Explorer</a>
-    <a href="https://github.com/frankxeth/arc-network" target="_blank" style="color:var(--t3);transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--t3)'">GitHub</a>
-    <a href="faucet.html" style="color:var(--t3);transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--t3)'">Faucet</a>
-  </div>
-  <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">Chain ID: 5042002 · MTK: 0xdb84...EF85</div>
 </footer>
 
 </body>
