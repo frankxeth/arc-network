@@ -732,32 +732,40 @@ function lbRefresh(){
 }
 async function loadLeaderboard(){
   try{
-    const PREDICT_ADDR='0xB471266db352b095D766F89dA3a6981d62407Deb';
-    const PREDICT_ABI=[
-      'event BetPlaced(address indexed bettor,uint256 indexed marketId,bool side,uint256 amount)'
-    ];
+    const MTK='0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85';
+    const POOL_YES='0xB471266db352b095D766F89dA3a6981d62407Deb';
+    const POOL_NO='0xE1769629A3C94Cf8d5dE5FBabCAF8B18944d810C';
     const rpc=new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
-    const contract=new ethers.Contract(PREDICT_ADDR,PREDICT_ABI,rpc);
-    const filter=contract.filters.BetPlaced();
-    const latestBlock=await rpc.getBlockNumber();
-    const startBlock=Math.max(0,latestBlock-500000);
-    const chunkSize=9000;
-    let events=[];
-    for(let from=startBlock;from<latestBlock;from+=chunkSize){
-      const to=Math.min(from+chunkSize-1,latestBlock);
-      try{const chunk=await contract.queryFilter(filter,from,to);events=events.concat(chunk);}catch(e){}
+    const sig=ethers.id('Transfer(address,address,uint256)');
+    const padYes='0x000000000000000000000000'+POOL_YES.slice(2).toLowerCase();
+    const padNo='0x000000000000000000000000'+POOL_NO.slice(2).toLowerCase();
+    const latest=await rpc.getBlockNumber();
+    const start=Math.max(0,latest-500000);
+    const chunk=9000;
+    let logs=[];
+    for(let f=start;f<latest;f+=chunk){
+      const t=Math.min(f+chunk-1,latest);
+      try{
+        const [ly,ln]=await Promise.all([
+          rpc.getLogs({address:MTK,fromBlock:f,toBlock:t,topics:[sig,null,padYes]}),
+          rpc.getLogs({address:MTK,fromBlock:f,toBlock:t,topics:[sig,null,padNo]})
+        ]);
+        logs=logs.concat(ly.map(l=>({...l,side:'yes'})),ln.map(l=>({...l,side:'no'})));
+      }catch(e){}
     }
     const map={};
-    events.forEach(e=>{
-      const addr=e.args.bettor.toLowerCase();
-      const short=addr.slice(0,6)+'...'+addr.slice(-4);
-      const amt=parseFloat(ethers.formatUnits(e.args.amount,18));
-      if(!map[addr])map[addr]={addr:short,full:addr,bets:0,vol:0,wr:0,wins:0,badge:'newbie',history:[]};
-      map[addr].bets++;
-      map[addr].vol+=amt;
-      map[addr].history.push({q:'Market #'+e.args.marketId,side:e.args.side?'yes':'no',amt:Math.round(amt)});
+    logs.forEach(l=>{
+      const from='0x'+l.topics[1].slice(26).toLowerCase();
+      if(from===POOL_YES.toLowerCase()||from===POOL_NO.toLowerCase())return;
+      const amt=parseFloat(ethers.formatUnits(l.data,18));
+      const short=from.slice(0,6)+'...'+from.slice(-4);
+      if(!map[from])map[from]={addr:short,full:from,bets:0,vol:0,wins:0,wr:0,badge:'newbie',history:[]};
+      map[from].bets++;
+      map[from].vol+=amt;
+      map[from].history.push({q:'Market Bet',side:l.side,amt:Math.round(amt)});
     });
     lbRows=Object.values(map).map(r=>{
+      r.vol=Math.round(r.vol);
       r.wr=r.bets>0?Math.round((r.wins/r.bets)*100):0;
       if(r.vol>5000)r.badge='whale';
       else if(r.bets>20)r.badge='degen';
@@ -768,10 +776,11 @@ async function loadLeaderboard(){
     lbRows.sort((a,b)=>b.vol-a.vol);
     lbRender();
   }catch(err){
-    console.warn('Leaderboard fetch error:',err);
+    console.warn('LB error:',err);
     lbRender();
   }
 }
+
 function lbRender(){
   const q=document.getElementById('lbSearch').value.toLowerCase();
   let data=[...lbRows];
