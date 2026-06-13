@@ -687,7 +687,7 @@ async function loadBalances(){
     const mtk=new ethers.Contract(MTK,ERC20_ABI,provider);
     const [mb,ub]=await Promise.all([mtk.balanceOf(account),provider.getBalance(account)]);
     const ms=parseFloat(ethers.formatUnits(mb,18)).toFixed(2);
-    const us=parseFloat(ethers.formatUnits(ub,6)).toFixed(4);
+    const us=parseFloat(ethers.formatUnits(ub,18)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('mtkBal').textContent=ms+' MTK';
     const uEl=document.getElementById('usdcBal');
     uEl.textContent=us+' USDC';
