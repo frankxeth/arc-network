@@ -582,7 +582,7 @@ async function _loadBals(){
   try{
     const mtk=new ethers.Contract(MTK_ADDR,ERC20_ABI,provider);
     const[mb,ub,d]=await Promise.all([mtk.balanceOf(userAddress),provider.getBalance(userAddress),mtk.decimals()]);
-    userMtk=mb;const ms=parseFloat(ethers.formatUnits(mb,d)).toFixed(2);const us=parseFloat(ethers.formatUnits(ub,6)).toFixed(4);
+    userMtk=mb;const ms=parseFloat(ethers.formatUnits(mb,d)).toFixed(2);const us=parseFloat(ethers.formatUnits(ub,6)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('wddMtk').textContent=ms+' MTK';document.getElementById('wddUsdc').textContent=us+' USDC';
     document.getElementById('dpBal').textContent='Balance: '+ms+' MTK';
     const pm=document.getElementById('portMtk'),pu=document.getElementById('portUsdc');
