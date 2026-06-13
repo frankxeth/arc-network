@@ -303,43 +303,26 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
     <button id="connectBtn" onclick="handleConnect()">Connect Wallet</button>
   </div>
 </nav>
-<!-- Live Trade Ticker Header -->
-<div id="live-ticker" style="background:linear-gradient(90deg,#0b1e2d 0%,#143453 100%);border-bottom:1px solid rgba(102,58,115,0.5);overflow:hidden;height:36px;display:flex;align-items:center;position:relative;">
-  <div style="background:#663A73;padding:0 14px;height:100%;display:flex;align-items:center;white-space:nowrap;z-index:2;flex-shrink:0;">
-    <span style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:600;color:#fff;letter-spacing:1.5px;">⬤ LIVE</span>
+<!-- Live Trade Bar -->
+<div style="background:#0b1e2d;border-bottom:1px solid rgba(102,58,115,0.4);display:flex;align-items:stretch;font-family:'Space Grotesk',sans-serif;font-size:11px;">
+  <div style="background:#663A73;padding:0 14px;display:flex;align-items:center;flex-shrink:0;">
+    <span style="color:#fff;font-weight:600;letter-spacing:1.5px;">⬤ LIVE</span>
   </div>
-  <div style="overflow:hidden;flex:1;position:relative;">
-    <div id="ticker-track" style="display:flex;gap:0;white-space:nowrap;animation:ticker 28s linear infinite;">
-      <span class="tick-item">BTC above $100K? &nbsp;<b style="color:#4ade80">YES 70%</b> &nbsp;·&nbsp; $8,420 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">Arc Mainnet Q3 2026? &nbsp;<b style="color:#60a5fa">YES 55%</b> &nbsp;·&nbsp; $6,210 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">ETH flips BTC 2025? &nbsp;<b style="color:#f87171">YES 30%</b> &nbsp;·&nbsp; $4,180 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">Fed rate cut Dec? &nbsp;<b style="color:#4ade80">YES 62%</b> &nbsp;·&nbsp; $3,600 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">Total Bets &nbsp;<b style="color:#fff">142</b> &nbsp;·&nbsp; Volume &nbsp;<b style="color:#663A73">$24,810</b> &nbsp;·&nbsp; Markets &nbsp;<b style="color:#fff">8</b></span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">BTC above $100K? &nbsp;<b style="color:#4ade80">YES 70%</b> &nbsp;·&nbsp; $8,420 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">Arc Mainnet Q3 2026? &nbsp;<b style="color:#60a5fa">YES 55%</b> &nbsp;·&nbsp; $6,210 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">ETH flips BTC 2025? &nbsp;<b style="color:#f87171">YES 30%</b> &nbsp;·&nbsp; $4,180 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">Fed rate cut Dec? &nbsp;<b style="color:#4ade80">YES 62%</b> &nbsp;·&nbsp; $3,600 vol</span>
-      <span class="tick-sep">|</span>
-      <span class="tick-item">Total Bets &nbsp;<b style="color:#fff">142</b> &nbsp;·&nbsp; Volume &nbsp;<b style="color:#663A73">$24,810</b> &nbsp;·&nbsp; Markets &nbsp;<b style="color:#fff">8</b></span>
-      <span class="tick-sep">|</span>
-    </div>
+  <div style="display:flex;align-items:center;gap:0;flex:1;overflow:hidden;">
+    <div style="padding:8px 20px;color:rgba(255,255,255,0.6);border-right:1px solid rgba(102,58,115,0.3);">BTC &gt;$100K? <b style="color:#4ade80">YES 70%</b> · $8,420</div>
+    <div style="padding:8px 20px;color:rgba(255,255,255,0.6);border-right:1px solid rgba(102,58,115,0.3);">Arc Mainnet Q3? <b style="color:#60a5fa">YES 55%</b> · $6,210</div>
+    <div style="padding:8px 20px;color:rgba(255,255,255,0.6);border-right:1px solid rgba(102,58,115,0.3);">ETH flips BTC? <b style="color:#f87171">YES 30%</b> · $4,180</div>
+    <div style="padding:8px 20px;color:rgba(255,255,255,0.6);border-right:1px solid rgba(102,58,115,0.3);">Fed cut Dec? <b style="color:#4ade80">YES 62%</b> · $3,600</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;padding:0 20px;border-left:1px solid rgba(102,58,115,0.3);flex-shrink:0;">
+    <span style="color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:1px;">VOL <b style="color:#663A73">$24,810</b></span>
+    <span style="color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:1px;">BETS <b style="color:#fff">142</b></span>
+    <span style="color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:1px;">MARKETS <b style="color:#fff">8</b></span>
   </div>
 </div>
-<style>
-.tick-item{font-family:'Space Grotesk',sans-serif;font-size:11px;color:rgba(255,255,255,0.75);padding:0 20px;display:inline-flex;align-items:center;}
-.tick-sep{color:rgba(102,58,115,0.6);font-size:14px;display:inline-flex;align-items:center;}
-@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-#ticker-track:hover{animation-play-state:paused;}
-</style>
-<!-- End Live Trade Ticker -->
+<!-- End Live Trade Bar -->
+
+
 
 
 
