@@ -705,7 +705,7 @@ const LB_SEED=[
 ];
 const BADGE_LABEL={whale:'🐋 Whale',degen:'🎰 Degen',gm:'✅ GM',noob:'🌱 Newbie'};
 const AV_COLS=['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4'];
-let lbRows=LB_SEED.map(r=>({...r})),lbSortCol='vol',lbSortDir=-1,lbBadge='all',lbExpanded=null,lbLive=false,lbTimer=null;
+let lbRows=[],lbSortCol='vol',lbSortDir=-1,lbBadge='all',lbExpanded=null,lbLive=false,lbTimer=null;
 
 function avColor(addr){let h=0;for(const c of addr)h=(h*31+c.charCodeAt(0))&0xffff;return AV_COLS[h%AV_COLS.length]}
 function lbInjectUser(){
@@ -715,8 +715,43 @@ function lbInjectUser(){
   const idx=lbRows.findIndex(r=>r.me);if(idx>=0)lbRows[idx]=row;else lbRows.push(row);
 }
 function lbRefresh(){
-  lbRows=LB_SEED.map(r=>({...r,vol:r.vol+Math.floor(Math.random()*120-40),bets:r.bets+(Math.random()>.75?1:0),wr:Math.max(20,Math.min(95,r.wr+Math.floor(Math.random()*4-2)))}));
-  lbInjectUser();lbRows.sort((a,b)=>b.vol-a.vol);lbRender();
+  
+  lbRows.sort((a,b)=>b.vol-a.vol);lbRender();
+}
+async function loadLeaderboard(){
+  try{
+    const PREDICT_ADDR='0xB471266db352b095D766F89dA3a6981d62407Deb';
+    const PREDICT_ABI=[
+      'event BetPlaced(address indexed bettor,uint256 indexed marketId,bool side,uint256 amount)'
+    ];
+    const rpc=new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
+    const contract=new ethers.Contract(PREDICT_ADDR,PREDICT_ABI,rpc);
+    const filter=contract.filters.BetPlaced();
+    const events=await contract.queryFilter(filter,0,'latest');
+    const map={};
+    events.forEach(e=>{
+      const addr=e.args.bettor.toLowerCase();
+      const short=addr.slice(0,6)+'...'+addr.slice(-4);
+      const amt=parseFloat(ethers.formatUnits(e.args.amount,18));
+      if(!map[addr])map[addr]={addr:short,full:addr,bets:0,vol:0,wr:0,wins:0,badge:'newbie',history:[]};
+      map[addr].bets++;
+      map[addr].vol+=amt;
+      map[addr].history.push({q:'Market #'+e.args.marketId,side:e.args.side?'yes':'no',amt:Math.round(amt)});
+    });
+    lbRows=Object.values(map).map(r=>{
+      r.wr=r.bets>0?Math.round((r.wins/r.bets)*100):0;
+      if(r.vol>5000)r.badge='whale';
+      else if(r.bets>20)r.badge='degen';
+      else if(r.bets>5)r.badge='gm';
+      else r.badge='newbie';
+      return r;
+    });
+    lbRows.sort((a,b)=>b.vol-a.vol);
+    lbRender();
+  }catch(err){
+    console.warn('Leaderboard fetch error:',err);
+    lbRender();
+  }
 }
 function lbRender(){
   const q=document.getElementById('lbSearch').value.toLowerCase();
