@@ -731,6 +731,11 @@ function lbRefresh(){
   lbRows.sort((a,b)=>b.vol-a.vol);lbRender();
 }
 async function loadLeaderboard(){
+  if(window._lbAutoRefresh)clearInterval(window._lbAutoRefresh);
+  window._lbAutoRefresh=setInterval(()=>{
+    if(document.getElementById('leaderboardPage')?.style.display!=='none')loadLeaderboard();
+    else clearInterval(window._lbAutoRefresh);
+  },120000);
   try{
     const MTK='0xdb8411b9B8D96168b47b08Df6CB10c799e88EF85';
     const POOL_YES='0xB471266db352b095D766F89dA3a6981d62407Deb';
