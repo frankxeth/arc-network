@@ -294,7 +294,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('markets',this)">Markets</button>
     <button class="nav-tab" onclick="showPage('portfolio',this)">Portfolio</button>
-    <button class="nav-tab" onclick="showPage('leaderboard',this)">Leaderboard</button>
+    <button class="nav-tab" onclick="showPage('leaderboard',this);loadLeaderboard()">Leaderboard</button>
     <button class="nav-tab" onclick="window.open('https://testnet.arcscan.app','_blank')">Explorer ↗</button>
     <button class="nav-tab" onclick="window.location.href='faucet.html'">Faucet</button>
   </div>
@@ -854,7 +854,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         <div style="display:flex;flex-direction:column;gap:11px">
           <a style="font-size:13px;color:var(--t3)" href="#" onclick="showPage('markets',document.querySelector('.nav-tab'));return false">Markets</a>
           <a style="font-size:13px;color:var(--t3)" href="#" onclick="showPage('portfolio',null);return false">Portfolio</a>
-          <a style="font-size:13px;color:var(--t3)" href="#" onclick="showPage('leaderboard',null);return false">Leaderboard</a>
+          <a style="font-size:13px;color:var(--t3)" href="#" onclick="showPage('leaderboard',null);loadLeaderboard();return false">Leaderboard</a>
           <a style="font-size:13px;color:var(--t3)" href="faucet.html">Faucet</a>
         </div>
       </div>
