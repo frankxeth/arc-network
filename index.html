@@ -303,55 +303,45 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;ali
     <button id="connectBtn" onclick="handleConnect()">Connect Wallet</button>
   </div>
 </nav>
-<!-- ARC-ID Hero Banner -->
-<div style="background:#0b1e2d;border-bottom:1px solid #663A73;padding:0;margin-bottom:0;">
-  <!-- Ticker -->
-  <div style="background:#143453;padding:6px 20px;font-family:'Space Grotesk',sans-serif;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:1px;display:flex;gap:20px;align-items:center;">
-    <span>ARC TESTNET</span>
-    <span style="color:#4ade80;font-weight:500;">● LIVE</span>
-    <span>CHAIN ID: 5042002</span>
-    <span>MTK TOKEN</span>
-    <span>8 MARKETS OPEN</span>
-    <span>VOL $24,810</span>
+<!-- Live Trade Ticker Header -->
+<div id="live-ticker" style="background:linear-gradient(90deg,#0b1e2d 0%,#143453 100%);border-bottom:1px solid rgba(102,58,115,0.5);overflow:hidden;height:36px;display:flex;align-items:center;position:relative;">
+  <div style="background:#663A73;padding:0 14px;height:100%;display:flex;align-items:center;white-space:nowrap;z-index:2;flex-shrink:0;">
+    <span style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:600;color:#fff;letter-spacing:1.5px;">⬤ LIVE</span>
   </div>
-  <!-- Hero content -->
-  <div style="padding:40px 32px 32px;display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap;">
-    <!-- Left: headline -->
-    <div style="flex:1;min-width:240px;">
-      <div style="display:flex;align-items:center;margin-bottom:12px;">
-        <svg width="36" height="36" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="22,2 38,11 38,33 22,42 6,33 6,11" fill="#143453"/>
-          <polygon points="22,9 32,15 32,29 22,35 12,29 12,15" fill="#663A73"/>
-          <path d="M14,30 Q18,20 22,18 Q26,16 30,11" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-          <polygon points="28,7 35,13 21,15" fill="#ffffff"/>
-          <circle cx="14" cy="30" r="3" fill="#ffffff"/>
-        </svg>
-        <span style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.5px;">ARC-ID</span>
-        <span style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:#663A73;letter-spacing:3px;margin-left:12px;margin-top:4px;">PREDICTION MARKET</span>
-      </div>
-      <div style="border-top:1px solid rgba(102,58,115,0.4);padding-top:16px;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:#fff;line-height:1.1;letter-spacing:-1px;">BET ON<br><span style="color:#663A73;">REAL OUTCOMES</span></div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;letter-spacing:0.5px;">On-chain · Non-custodial · Fully transparent</div>
-      </div>
-    </div>
-    <!-- Right: stats -->
-    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
-      <div style="border-left:2px solid #663A73;padding-left:16px;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;">MARKETS</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#fff;">8</div>
-      </div>
-      <div style="border-left:2px solid #663A73;padding-left:16px;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;">VOLUME</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#663A73;">$24.8K</div>
-      </div>
-      <div style="border-left:2px solid #143453;padding-left:16px;">
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;">BETS</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:#fff;">142</div>
-      </div>
+  <div style="overflow:hidden;flex:1;position:relative;">
+    <div id="ticker-track" style="display:flex;gap:0;white-space:nowrap;animation:ticker 28s linear infinite;">
+      <span class="tick-item">BTC above $100K? &nbsp;<b style="color:#4ade80">YES 70%</b> &nbsp;·&nbsp; $8,420 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">Arc Mainnet Q3 2026? &nbsp;<b style="color:#60a5fa">YES 55%</b> &nbsp;·&nbsp; $6,210 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">ETH flips BTC 2025? &nbsp;<b style="color:#f87171">YES 30%</b> &nbsp;·&nbsp; $4,180 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">Fed rate cut Dec? &nbsp;<b style="color:#4ade80">YES 62%</b> &nbsp;·&nbsp; $3,600 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">Total Bets &nbsp;<b style="color:#fff">142</b> &nbsp;·&nbsp; Volume &nbsp;<b style="color:#663A73">$24,810</b> &nbsp;·&nbsp; Markets &nbsp;<b style="color:#fff">8</b></span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">BTC above $100K? &nbsp;<b style="color:#4ade80">YES 70%</b> &nbsp;·&nbsp; $8,420 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">Arc Mainnet Q3 2026? &nbsp;<b style="color:#60a5fa">YES 55%</b> &nbsp;·&nbsp; $6,210 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">ETH flips BTC 2025? &nbsp;<b style="color:#f87171">YES 30%</b> &nbsp;·&nbsp; $4,180 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">Fed rate cut Dec? &nbsp;<b style="color:#4ade80">YES 62%</b> &nbsp;·&nbsp; $3,600 vol</span>
+      <span class="tick-sep">|</span>
+      <span class="tick-item">Total Bets &nbsp;<b style="color:#fff">142</b> &nbsp;·&nbsp; Volume &nbsp;<b style="color:#663A73">$24,810</b> &nbsp;·&nbsp; Markets &nbsp;<b style="color:#fff">8</b></span>
+      <span class="tick-sep">|</span>
     </div>
   </div>
 </div>
-<!-- End Hero Banner -->
+<style>
+.tick-item{font-family:'Space Grotesk',sans-serif;font-size:11px;color:rgba(255,255,255,0.75);padding:0 20px;display:inline-flex;align-items:center;}
+.tick-sep{color:rgba(102,58,115,0.6);font-size:14px;display:inline-flex;align-items:center;}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#ticker-track:hover{animation-play-state:paused;}
+</style>
+<!-- End Live Trade Ticker -->
+
+
 
 
 <div id="walletDD">
