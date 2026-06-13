@@ -727,7 +727,14 @@ async function loadLeaderboard(){
     const rpc=new ethers.JsonRpcProvider('https://rpc.testnet.arc.network');
     const contract=new ethers.Contract(PREDICT_ADDR,PREDICT_ABI,rpc);
     const filter=contract.filters.BetPlaced();
-    const events=await contract.queryFilter(filter,0,'latest');
+    const latestBlock=await rpc.getBlockNumber();
+    const startBlock=Math.max(0,latestBlock-500000);
+    const chunkSize=9000;
+    let events=[];
+    for(let from=startBlock;from<latestBlock;from+=chunkSize){
+      const to=Math.min(from+chunkSize-1,latestBlock);
+      try{const chunk=await contract.queryFilter(filter,from,to);events=events.concat(chunk);}catch(e){}
+    }
     const map={};
     events.forEach(e=>{
       const addr=e.args.bettor.toLowerCase();
